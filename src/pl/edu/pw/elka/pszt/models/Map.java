@@ -47,4 +47,8 @@ public class Map {
     public void setLocations(Location[][] locations) {
         this.locations = locations;
     }
+
+    public void setLocationAt(int x, int y, Location location) {
+        this.locations[x][y] = location;
+    }
 }
