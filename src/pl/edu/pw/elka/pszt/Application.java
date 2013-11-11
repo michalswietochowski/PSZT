@@ -16,6 +16,7 @@ public class Application {
     public static void main(String[] args) {
         try {
             Level level1 = LevelFactory.createFromProperties("level1");
+            System.out.println(level1);
         } catch (Exception e) {
             e.printStackTrace();
         }

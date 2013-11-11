@@ -51,4 +51,18 @@ public class Map {
     public void setLocationAt(int x, int y, Location location) {
         this.locations[x][y] = location;
     }
+
+    @Override
+    public String toString() {
+        String string = String.format("Map %dx%d:\n", this.width, this.height);
+
+        for (int x = 0; x < this.width; x++) {
+            for (int y = 0; y < this.height; y++) {
+                string += this.locations[x][y].toString();
+            }
+            string += "\n";
+        }
+
+        return string;
+    }
 }

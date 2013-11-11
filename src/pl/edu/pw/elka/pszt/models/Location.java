@@ -46,4 +46,13 @@ public class Location {
     public void setObjects(Set<MapObject> objects) {
         this.objects = objects;
     }
+
+    @Override
+    public String toString() {
+        String string = "";
+        for (MapObject object : this.objects) {
+            string += object.toString();
+        }
+        return String.format("%3s", string);
+    }
 }

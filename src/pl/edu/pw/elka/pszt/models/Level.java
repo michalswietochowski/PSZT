@@ -24,4 +24,13 @@ public class Level {
     public void setMap(Map map) {
         this.map = map;
     }
+
+    /**
+     * For testing purposes
+     *
+     * @return debug string
+     */
+    public String toString() {
+        return String.format("Level %d\n", this.number) + this.map.toString();
+    }
 }
