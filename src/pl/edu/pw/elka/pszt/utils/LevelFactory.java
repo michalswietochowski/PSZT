@@ -1,9 +1,11 @@
 package pl.edu.pw.elka.pszt.utils;
 
 import pl.edu.pw.elka.pszt.models.Level;
-import pl.edu.pw.elka.pszt.models.Location;
+//import pl.edu.pw.elka.pszt.models.Location;
 import pl.edu.pw.elka.pszt.models.Map;
 import pl.edu.pw.elka.pszt.models.MapObject;
+import pl.edu.pw.elka.pszt.models.MovableObject;
+import pl.edu.pw.elka.pszt.models.MovablesMap;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,26 +38,41 @@ public class LevelFactory {
         int mapWidth = Integer.parseInt(properties.getProperty(MAP_WIDTH));
         int mapHeight = Integer.parseInt(properties.getProperty(MAP_HEIGHT));
         Map map = new Map(mapWidth, mapHeight);
+        MovablesMap movablesMap = new MovablesMap(mapWidth, mapHeight);
 
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
-                Location location = new Location(x, y);
-                Set<MapObject> objects = new HashSet<MapObject>();
+                //Location location = new Location(x, y);
+                
 
-                String objCountProp = String.format(LOCATION_FORMAT, y, x) + LOCATION_OBJECTS;
+                String objCountProp = String.format(LOCATION_FORMAT, x,y) + LOCATION_OBJECTS;
                 int objCount = Integer.parseInt(properties.getProperty(objCountProp));
 
                 for (int z = 0; z < objCount; z++) {
-                    String objNameProp = String.format(LOCATION_FORMAT, y, x) + z;
-                    String objName = properties.getProperty(objNameProp);
-                    objects.add((MapObject) Class.forName(MODEL_CLASS_FORMAT + objName).getConstructor().newInstance());
+                	if(z==0){
+	                    String objNameProp = String.format(LOCATION_FORMAT, x,y) + z;
+	                    String objName = properties.getProperty(objNameProp);
+	                    MapObject mapObject = ((MapObject) Class.forName(MODEL_CLASS_FORMAT + objName).getConstructor().newInstance());
+	                    map.setMapObjectAt(x, y, mapObject);
+                	}else {
+                		String objNameProp = String.format(LOCATION_FORMAT, x,y) + z;
+	                    String objName = properties.getProperty(objNameProp);
+	                    MovableObject movable = ((MovableObject) Class.forName(MODEL_CLASS_FORMAT + objName).getConstructor().newInstance());
+	                    movablesMap.setMovableObjectAt(x, y, movable);
+                	//mapa obiektów ruchomych
+                	}
                 }
-                location.setObjects(objects);
-                map.setLocationAt(x, y, location);
+                
+                
+                
+                
+                //location.setObjects(objects);
+                //map.setLocationAt(x, y, mapObject);
             }
         }
 
         level.setMap(map);
+        level.setMovablesMap(movablesMap);
 
         return level;
     }

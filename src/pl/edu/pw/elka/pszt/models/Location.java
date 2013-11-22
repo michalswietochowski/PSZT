@@ -1,11 +1,12 @@
 package pl.edu.pw.elka.pszt.models;
-
+/*
 import java.util.Set;
 
 /**
  * PSZT
  * Created: 10.11.2013 23:59
  */
+/*
 public class Location {
 
     protected int x;
@@ -55,4 +56,4 @@ public class Location {
         }
         return String.format("%3s", string);
     }
-}
+}*/

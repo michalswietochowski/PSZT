@@ -8,3 +8,10 @@
 # IntelliJ IDEA
 .idea
 *.iml
+
+#eclipse
+.classpath
+.project
+LICENCE
+
+.git/

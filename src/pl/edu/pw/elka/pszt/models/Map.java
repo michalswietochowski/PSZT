@@ -16,14 +16,32 @@ public class Map {
     /**
      *
      */
-    protected Location[][] locations;
+    protected MapObject[][] mapObjects;
 
     public Map(int width, int height) {
         this.width = width;
         this.height = height;
-        this.locations = new Location[width][height];
+        this.mapObjects = new MapObject[width][height];
     }
 
+    public boolean canMove(int x, int y){
+    	return isFloor(x,y) || isSpot(x,y);
+    }
+    
+    private boolean isFloor(int x, int y){
+    	if(mapObjects[x][y].getClass() == Floor.class){
+    		return true;
+    	}
+    	return false;
+    }
+    
+    private boolean isSpot(int x, int y){
+    	if(mapObjects[x][y].getClass() == Spot.class){
+    		return true;
+    	}
+    	return false;
+    }
+    
     public int getWidth() {
         return width;
     }
@@ -40,25 +58,26 @@ public class Map {
         this.height = height;
     }
 
-    public Location[][] getLocations() {
-        return locations;
+    public MapObject[][] getMapObjects() {
+        return mapObjects;
     }
 
-    public void setLocations(Location[][] locations) {
-        this.locations = locations;
+    public void setMapObjects(MapObject[][] mapObjects) {
+        this.mapObjects = mapObjects;
     }
 
-    public void setLocationAt(int x, int y, Location location) {
-        this.locations[x][y] = location;
+    public void setMapObjectAt(int x, int y, MapObject mapObject) {
+        this.mapObjects[x][y] = mapObject;
     }
 
     @Override
     public String toString() {
         String string = String.format("Map %dx%d:\n", this.width, this.height);
-
-        for (int x = 0; x < this.width; x++) {
-            for (int y = 0; y < this.height; y++) {
-                string += this.locations[x][y].toString();
+        
+        for (int y = 0; y < this.height; y++) {
+        	string += y + " ";
+            for (int x = 0; x < this.width; x++) {
+                string += "|" + this.mapObjects[x][y].toString();
             }
             string += "\n";
         }
