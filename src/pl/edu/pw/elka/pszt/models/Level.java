@@ -17,13 +17,14 @@ public class Level {
         this.number = number;
     }
 
-    public boolean canMove(Move nextMove, char to){
+    public boolean canMove(Move nextMove){
     	int x,y;
     	x= nextMove.getXo();
     	y = nextMove.getYo();
+    	
     	if(map.canMove(x,y)){
     		if(movablesMap.isBarrel(x,y)){
-    			nextMove = nextMove.calcNextMove(to);
+    			nextMove = nextMove.calcNextMove('F');
     			x= nextMove.getXo();
     	    	y = nextMove.getYo();
     	    	if(map.canMove(x,y)){

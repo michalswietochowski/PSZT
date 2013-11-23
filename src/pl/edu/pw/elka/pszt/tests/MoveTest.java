@@ -2,6 +2,8 @@ package pl.edu.pw.elka.pszt.tests;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+
 import org.junit.Test;
 
 import pl.edu.pw.elka.pszt.game.Move;
@@ -13,6 +15,7 @@ import pl.edu.pw.elka.pszt.utils.LevelFactory;
 public class MoveTest {
 
 	Round round1;
+	Move initMoveN, initMoveE, initMoveS, initMoveW;
 	
 	public MoveTest(){
 		try {
@@ -40,38 +43,87 @@ public class MoveTest {
 	
 	@Test
 	public void moveTest() {
-		round1.getLevel().getBulldozer();
+		canMoveForwardTest();
+		canMoveLeftTest();
+		canMoveRightTest();
+	}
+
+	
+	private void canMoveForwardTest(){
+		System.out.println("\n canMoveForwardTest \n");
+		initMoves();
+		round1.setLastMove(initMoveN);
+		assertTrue(round1.checkMove('F'));
+		round1.setLastMove(initMoveE);
+		assertFalse(round1.checkMove('F'));
+		round1.setLastMove(initMoveS);
+		assertTrue(round1.checkMove('F'));
+		round1.setLastMove(initMoveW);
+		assertTrue(round1.checkMove('F'));
 		
-		Move initialMove = new Move(
+	}
+	
+	private void initMoves(){
+		
+		initMoveE = new Move(
 				round1.getLevel().getMovablesMap().getBulldozerX()-1,
 				round1.getLevel().getMovablesMap().getBulldozerY(),
 				round1.getLevel().getMovablesMap().getBulldozerX(),
 				round1.getLevel().getMovablesMap().getBulldozerY()
 				);
-		round1.setLastMove(initialMove);
-		round1.checkMoves();
-		initialMove = new Move(
+		
+		
+		initMoveW = new Move(
 				round1.getLevel().getMovablesMap().getBulldozerX()+1,
 				round1.getLevel().getMovablesMap().getBulldozerY(),
 				round1.getLevel().getMovablesMap().getBulldozerX(),
 				round1.getLevel().getMovablesMap().getBulldozerY()
 				);
-		round1.setLastMove(initialMove);
-		round1.checkMoves();
-		initialMove = new Move(
+		
+		initMoveS = new Move(
 				round1.getLevel().getMovablesMap().getBulldozerX(),
 				round1.getLevel().getMovablesMap().getBulldozerY()-1,
 				round1.getLevel().getMovablesMap().getBulldozerX(),
 				round1.getLevel().getMovablesMap().getBulldozerY());
-		round1.setLastMove(initialMove);
-		round1.checkMoves();
-		initialMove = new Move(
+
+
+		initMoveN = new Move(
 				round1.getLevel().getMovablesMap().getBulldozerX(),
 				round1.getLevel().getMovablesMap().getBulldozerY()+1,
 				round1.getLevel().getMovablesMap().getBulldozerX(),
 				round1.getLevel().getMovablesMap().getBulldozerY());
-		round1.setLastMove(initialMove);
-		round1.checkMoves();
+		
 	}
-
+	
+	
+	
+	private void canMoveLeftTest(){
+		System.out.println("\n canMoveLeftTest \n");
+		
+		initMoves();
+		round1.setLastMove(initMoveN);
+		assertTrue(round1.checkMove('L'));
+		round1.setLastMove(initMoveE);
+		assertTrue(round1.checkMove('L'));
+		round1.setLastMove(initMoveS);
+		assertFalse(round1.checkMove('L'));
+		round1.setLastMove(initMoveW);
+		assertTrue(round1.checkMove('L'));
+		
+	}
+	
+	private void canMoveRightTest(){
+		System.out.println("\n canMoveRightTest \n");
+		
+		initMoves();
+		round1.setLastMove(initMoveN);
+		assertFalse(round1.checkMove('R'));
+		round1.setLastMove(initMoveE);
+		assertTrue(round1.checkMove('R'));
+		round1.setLastMove(initMoveS);
+		assertTrue(round1.checkMove('R'));
+		round1.setLastMove(initMoveW);
+		assertTrue(round1.checkMove('R'));
+		
+	}
 }

@@ -31,7 +31,7 @@ public class MovablesMap {
 	   
    }
    
-   
+ 
    
    public Bulldozer getBulldozer(){
 	   for(int x=0;x< this.width;x++){

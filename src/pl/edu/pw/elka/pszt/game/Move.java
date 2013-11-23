@@ -14,13 +14,16 @@ public class Move {
 	public Move calcNextMove(char to){
 		int diffX = xo-xi;
 		int diffY = yo-yi;
-		int x =0,y =0;
+		Move nextMove=null;
+		
 		if(to=='F'){
-			x= diffX;
-			y = diffY;
+			nextMove = new Move(xo, yo, xo+diffX, yo+diffY);
+		}else if(to=='L'){
+			nextMove = new Move(xo, yo, xo+diffY, yo-diffX);
+		}else if(to=='R'){
+			nextMove = new Move(xo, yo, xo-diffY, yo+diffX);
 		}
 		
-		Move nextMove = new Move(xo, yo, xo+x, yo+y);
 		System.out.println("Next move " + nextMove.toString());
 		return nextMove;
 	}
