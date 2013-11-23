@@ -104,6 +104,7 @@ public class MoveTest {
 		canMoveLeftTest();
 		canMoveRightTest();
 		moveBulldozerTest();
+		
 	}
 	
 	@Test
@@ -167,11 +168,11 @@ public class MoveTest {
 	@Test
 	public void minMoveTest(){
 		
-		round1.addLastMove(initMoveW);
+		//round1.addLastMove(initMoveW);
 		round1.setBarrelSpotPairs(barrelSpotPairs);
 		System.out.println("\n minMoveTest \n");
 		System.out.println(round1.getLevel().getMovablesMap().toString());
-		
+		/*
 		round1.checkMoves();
 		Move minMove = round1.findMinMove();
 		round1.move(minMove);
@@ -196,7 +197,8 @@ public class MoveTest {
 		minMove = round1.findMinMove();
 		round1.move(minMove);
 		System.out.println(round1.getLevel().getMovablesMap().toString());
-		
+		*/
+		round1.start(barrelSpotPairs, initMoveN);
 	}
 
 	

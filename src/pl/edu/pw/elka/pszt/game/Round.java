@@ -1,6 +1,8 @@
 package pl.edu.pw.elka.pszt.game;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import pl.edu.pw.elka.pszt.models.Barrel;
 import pl.edu.pw.elka.pszt.models.BarrelSpotPair;
@@ -39,22 +41,41 @@ public class Round {
 		this.barrelSpotPairs =barrelSpotPairs;
 		this.executingPair = this.barrelSpotPairs.get(0);
 		this.executedMoves.add(initMove);
-		for (BarrelSpotPair<Barrel, Spot> barrelSpotPair : barrelSpotPairs) {
+		int count =0;
+		for (BarrelSpotPair<Barrel, Spot> barrelSpotPair : this.barrelSpotPairs) {
 			while(h(barrelSpotPair)!=1){//jaki dodatkowy warunek, zêby sie nie krêci³ do usranej œmierci?
 				checkMoves();
-				
-				
+				Move minMove = findMinMove();
+				System.out.println("min move " + minMove
+						);
+				if(minMove != null){
+					move(minMove);
+				}else {
+					System.out.println("goback");
+					goBack(executedMoves.get(executedMoves.size()-1).isMovedBarrel());
+				}
+				System.out.println("move # " + count++);
+				System.out.println(level.getMovablesMap().toString());
+				try {
+					System.in.read();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 	
 	public void checkMoves(){
-		availableMoves = new ArrayList<Move>();
+		availableMoves.clear();
 		if(checkMove('F')) availableMoves.add(executedMoves.get(executedMoves.size()-1).calcNextMove('F'));
 		if(checkMove('L')) availableMoves.add(executedMoves.get(executedMoves.size()-1).calcNextMove('L'));
 		if(checkMove('R')) availableMoves.add(executedMoves.get(executedMoves.size()-1).calcNextMove('R'));
 		
-	
+		System.out.println("forbiden" + forbidenMoves.size() + " " + forbidenMoves);
+		removeDuplicatesFromMoves();
+		System.out.println("executed" + executedMoves.size() + " " + executedMoves);
+		System.out.println("available " + availableMoves);
 	}
 	
 	public boolean checkMove(char to){
@@ -65,37 +86,144 @@ public class Round {
 				return false;
 			}
 		}
-		return level.canMove(nextMove);
+		boolean canMove = level.canMove(nextMove);
+		if(!canMove){
+			forbidenMoves.add(nextMove);
+		}
+		for (Move executedMove : executedMoves) {
+			if(executedMove.equals(nextMove)){
+				return false;
+			}
+		}
+		
+		
+		return canMove;
+	}
+	
+	private void removeDuplicatesFromMoves(){
+		ArrayList<Move> forbidenMovesNew = new ArrayList<Move>();
+		/*ArrayList<Move> executedMovesNew = new ArrayList<Move>();
+		for (Move executed : executedMoves) {
+			
+		}*/
+		for (Move forbiden : forbidenMoves) {
+			for (Move move : forbidenMovesNew) {
+				//System.out.println("porónanie " + move + " " + forbiden);
+				if(forbiden.equals(move)){
+					//System.out.println("wykryl zawieranie");
+				}
+			}
+			if(contains(forbidenMovesNew, forbiden)){
+				forbidenMovesNew = remove(forbidenMovesNew, forbiden);
+				System.out.println("wykryl zawieranie");
+			}
+			//System.out.println("forbiden after cleaning " +  forbidenMovesNew.size());
+			//System.out.println("forbiden cleaning " + forbiden);
+			forbidenMovesNew.add(forbiden);
+			//
+			
+			
+		}
+		System.out.println("forbiden after cleaning " +  forbidenMovesNew.size() + " " + forbidenMovesNew);		
+		//forbidenMoves.clear();
+		forbidenMoves = forbidenMovesNew;
+		//executedMoves.clear();
+		//executedMoves = executedMovesNew;
+	}
+	
+	private boolean contains(ArrayList<Move> list, Move move){
+		for (Move tmove : list) {
+			if(move.equals(tmove)){
+				
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private ArrayList<Move>  remove(ArrayList<Move> list, Move move){
+		ArrayList<Move> listnew = new ArrayList<Move>(list);
+		for (Move tmove : list) {
+			if(move.equals(tmove)){
+				listnew.remove(tmove);				
+			}
+		}
+		list = listnew;
+		//System.out.println("list after removal " + list );
+		return listnew;
 	}
 	
 	public void move(Move nextMove){
 		moveMin(nextMove);
-		availableMoves.remove(nextMove);
+		availableMoves = remove(availableMoves, nextMove);
 		
+	}
+	
+	
+	
+	public Move findMinMove(){
+		Move minMove = null;//= availableMoves.get(0);
+		//moveMin(minMove);
+		int fmin =0;//= g() + h(executingPair);
+		//goBackMin(availableMoves.get(0).isMovedBarrel());
+		
+		for (int i =0;i<availableMoves.size();i++){
+			if(!forbidenMoves.contains(availableMoves.get(i))){
+				if(minMove == null){
+					minMove = availableMoves.get(i);
+					moveMin(minMove);
+					fmin = g() + h(executingPair);
+					
+				}else 				
+				if(!minMove.equals(availableMoves.get(i))){
+					moveMin(availableMoves.get(i));
+					if( g() + h(executingPair) < fmin) {
+						fmin = g() + h(executingPair);
+						minMove = availableMoves.get(i);
+						}
+					}
+				goBackMin();
+			}
+		}
+		return minMove;
 	}
 	
 	public void moveMin(Move nextMove){
 		level.move(nextMove);
 		executedMoves.add(nextMove);
+		//System.out.println( "moved " + nextMove.toString());
 	}
 	
-	public Move findMinMove(){
-		Move minMove = availableMoves.get(0);
-		moveMin(minMove);
-		int fmin = g() + h(executingPair);
-		goBackMin(availableMoves.get(0).isMovedBarrel());
+	public void goBackMin(//boolean movedBarrel
+			){
 		
-		for (int i =0;i<availableMoves.size();i++){
-			if(!minMove.equals(availableMoves.get(i))){
-				moveMin(availableMoves.get(i));
-				if( g() + h(executingPair) < fmin) {
-					fmin = g() + h(executingPair);
-					minMove = availableMoves.get(i);
-					}
-				goBackMin(availableMoves.get(i).isMovedBarrel());
-			}
+		Move lastMove = executedMoves.get(executedMoves.size()-1);
+		Move reverseMove = new Move(
+				lastMove.getXo(),
+				lastMove.getYo(),
+				lastMove.getXi(),
+				lastMove.getYi()
+				);
+		level.move(reverseMove);
+		//System.out.println("want to remove " + lastMove);
+		executedMoves = remove(executedMoves, lastMove);
+		//System.out.println("want to remove " + reverseMove);
+		executedMoves = remove(executedMoves, reverseMove);
+		
+		if(lastMove.isMovedBarrel()){
+			int diffX = lastMove.getXo() - lastMove.getXi();
+			int diffY = lastMove.getYo() - lastMove.getYi();
+			reverseMove = new Move(
+				lastMove.getXo() + diffX,
+				lastMove.getYo() + diffY,
+				lastMove.getXi() + diffX,
+				lastMove.getYi() + diffY
+				);
+			level.move(reverseMove);
+			executedMoves = remove(executedMoves, lastMove);
+			executedMoves = remove(executedMoves, reverseMove);
+			//availableMoves.add(lastMove);
 		}
-		return minMove;
 	}
 	
 	public int g(){
@@ -122,9 +250,9 @@ public class Round {
 				lastMove.getYi()
 				);
 		move(reverseMove);
-		availableMoves.add(lastMove);
-		executedMoves.remove(lastMove);
-		
+		forbidenMoves.add(lastMove);
+		executedMoves = remove(executedMoves, lastMove);
+		executedMoves = remove(executedMoves, reverseMove);
 		
 		
 		if(movedBarrel){
@@ -137,35 +265,13 @@ public class Round {
 				lastMove.getYi() + diffY
 				);
 			move(reverseMove);
+			executedMoves = remove(executedMoves, lastMove);
+			executedMoves = remove(executedMoves, reverseMove);
 			
 		}
 	}
 	
-	public void goBackMin(boolean movedBarrel){
-		
-		Move lastMove = executedMoves.get(executedMoves.size()-1);
-		Move reverseMove = new Move(
-				lastMove.getXo(),
-				lastMove.getYo(),
-				lastMove.getXi(),
-				lastMove.getYi()
-				);
-		level.move(reverseMove);		
-		executedMoves.remove(lastMove);
-		
-		if(movedBarrel){
-			int diffX = lastMove.getXo() - lastMove.getXi();
-			int diffY = lastMove.getYo() - lastMove.getYi();
-			reverseMove = new Move(
-				lastMove.getXo() + diffX,
-				lastMove.getYo() + diffY,
-				lastMove.getXi() + diffX,
-				lastMove.getYi() + diffY
-				);
-			move(reverseMove);
-			//availableMoves.add(lastMove);
-		}
-	}
+	
 	
 	public Level getLevel() {
 		return level;

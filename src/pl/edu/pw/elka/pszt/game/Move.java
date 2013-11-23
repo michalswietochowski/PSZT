@@ -69,6 +69,24 @@ public class Move {
 		 return String.format("Move from %d,%d to %d,%d barrel %b", this.xi, this.yi, this.xo, this.yo, this.movedBarrel);
 		 
 	 }
+	 @Override
+	 public boolean equals(Object obj) {
+	        if (obj == null) return false;
+	        if (getClass() != obj.getClass()) return false;
+	        final Move other = (Move) obj;
+	        if(this.xi==other.xi){
+	        	if(this.xo==other.xo){
+	        		if(this.yi==other.yi){
+	        			if(this.yo==other.yo){
+	        				if(this.movedBarrel==other.movedBarrel){
+	        					return true;
+	        		        }
+	        	        }
+	    	        }
+		        }
+	        	
+	        }return false;
+	    }
 
 	public boolean isMovedBarrel() {
 		return movedBarrel;
