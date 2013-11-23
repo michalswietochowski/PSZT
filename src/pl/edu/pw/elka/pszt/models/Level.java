@@ -36,11 +36,20 @@ public class Level {
     		}else {
     			return true;
     		}
-    	
     	}
-    	
     	return false;
     }
+    
+    public void move(Move nextMove){
+    	if(movablesMap.isBarrel(nextMove.getXo(), nextMove.getYo())){
+    		Move barrelMove = nextMove.calcNextMove('F');
+    		movablesMap.execute(barrelMove);
+    		nextMove.setMovedBarrel(true);
+    	}
+    	movablesMap.execute(nextMove);
+    	
+    }
+    
     
     
     public int getNumber() {

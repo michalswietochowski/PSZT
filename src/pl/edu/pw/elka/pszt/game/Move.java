@@ -2,7 +2,8 @@ package pl.edu.pw.elka.pszt.game;
 
 public class Move {
 	private int xi, yi, xo, yo;
-
+	private boolean movedBarrel=false;
+	
 	public Move(int xi, int yi, int xo, int yo){
 		this.xi =xi;
 		this.yi=yi;
@@ -24,7 +25,7 @@ public class Move {
 			nextMove = new Move(xo, yo, xo-diffY, yo+diffX);
 		}
 		
-		System.out.println("Next move " + nextMove.toString());
+		//System.out.println("Next move " + nextMove.toString());
 		return nextMove;
 	}
 	
@@ -65,8 +66,16 @@ public class Move {
 	
 	 @Override
 	   public String toString() {
-		 return String.format("Move from %d,%d to %d,%d", this.xi, this.yi, this.xo, this.yo);
+		 return String.format("Move from %d,%d to %d,%d barrel %b", this.xi, this.yi, this.xo, this.yo, this.movedBarrel);
 		 
 	 }
+
+	public boolean isMovedBarrel() {
+		return movedBarrel;
+	}
+
+	public void setMovedBarrel(boolean movedBarrel) {
+		this.movedBarrel = movedBarrel;
+	}
 	
 }

@@ -1,5 +1,9 @@
 package pl.edu.pw.elka.pszt.models;
 
+import java.util.ArrayList;
+
+import pl.edu.pw.elka.pszt.game.Move;
+
 public class MovablesMap {
 
 	/**
@@ -31,48 +35,74 @@ public class MovablesMap {
 	   
    }
    
+   public void execute(Move move){
+	   MovableObject movable = movables[move.getXi()][move.getYi()];
+	   movables[move.getXi()][move.getYi()] = null;
+	   movables[move.getXo()][move.getYo()] = movable;
+   }
  
    
    public Bulldozer getBulldozer(){
+	   MovableObject movable = getMovable();
+	   		if(movable.getClass()==Bulldozer.class){
+			   return (Bulldozer) movable;
+		   }
+   	   return null;
+   }   
+   
+   private MovableObject getMovable(){
 	   for(int x=0;x< this.width;x++){
 		   for(int y=0;y< this.height;y++){
 			   if(movables[x][y] != null) {
-				   if(movables[x][y].getClass()==Bulldozer.class){
-					   System.out.println("Buldozer " + x + ' ' + y
-							   );
-					   return (Bulldozer) movables[x][y];
+				  return movables[x][y];
+			   }
+		   }			
+	   }
+	   return null;
+	   
+   }
+   
+   public int[] findBulldozer(){
+	   for(int x=0;x< this.width;x++){
+		   for(int y=0;y< this.height;y++){
+			   if(movables[x][y] != null) {
+				   if(movables[x][y].getClass() == Bulldozer.class){
+					   int[] i = {x,y};
+					   return i;
 				   }
 			   }
 		   }			
 	   }
 	   return null;
-   }   
+   }
    
-   public int getBulldozerX(){
+   public ArrayList<Barrel> getBarrels(){
+	   ArrayList<Barrel> barrels= new ArrayList<Barrel>();
 	   for(int x=0;x< this.width;x++){
 		   for(int y=0;y< this.height;y++){
 			   if(movables[x][y] != null) {
-				   if(movables[x][y].getClass()==Bulldozer.class){
-					   return x;
+				   if(movables[x][y].getClass()==Barrel.class){
+					   barrels.add((Barrel)movables[x][y]);
 				   }
 			   }
 		   }			
 	   }
-	   return 0;
-   }   
+	   return barrels;
+   }
    
-   public int getBulldozerY(){
+   public int[] findBarrel(Barrel barrel){
 	   for(int x=0;x< this.width;x++){
 		   for(int y=0;y< this.height;y++){
 			   if(movables[x][y] != null) {
-				   if(movables[x][y].getClass()==Bulldozer.class){
-					   return y;
+				   if(movables[x][y] == barrel){
+					   int[] i = {x,y};
+					   return i;
 				   }
 			   }
 		   }			
 	   }
-	   return 0;
-   } 
+	   return null;
+   }
    
    public int getWidth() {
        return width;
