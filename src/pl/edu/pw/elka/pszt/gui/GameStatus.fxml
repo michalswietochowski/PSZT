@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: #ededed;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="pl.edu.pw.elka.pszt.gui.GameStatusController">
+    <bottom>
+        <Pane prefHeight="220.0">
+            <children>
+                <ListView fx:id="statusListView" disable="true" layoutX="20.0" layoutY="50.0" orientation="VERTICAL" prefHeight="150.0" prefWidth="984.0" />
+                <ProgressBar fx:id="statusProgressBar" layoutX="20.0" layoutY="20.0" prefWidth="984.0" progress="0.0" visible="false" />
+            </children>
+        </Pane>
+    </bottom>
+    <center>
+        <Pane prefWidth="524.0">
+            <children>
+                <GridPane fx:id="levelGridPane" gridLinesVisible="true" layoutX="20.0" layoutY="0.0" prefHeight="200.0" prefWidth="200.0" />
+            </children>
+            <padding>
+                <Insets left="10.0" right="10.0" />
+            </padding>
+        </Pane>
+    </center>
+    <right>
+        <TableView fx:id="statsTableView" disable="true" prefWidth="500.0" tableMenuButtonVisible="false">
+            <columns>
+                <TableColumn editable="false" prefWidth="240.0" resizable="false" sortable="false" text="Statistic parameter" />
+                <TableColumn editable="false" prefWidth="239.0" resizable="false" sortable="false" text="Value" />
+            </columns>
+            <BorderPane.margin>
+                <Insets right="20.0" />
+            </BorderPane.margin>
+        </TableView>
+    </right>
+    <top>
+        <FlowPane alignment="CENTER" prefHeight="100.0" prefWidth="1024.0">
+            <children>
+                <ComboBox fx:id="levelComboBox" onAction="#onLevelChange" prefWidth="180.0" promptText="Choose level" />
+                <Button fx:id="solveButton" disable="true" mnemonicParsing="false" onAction="#onSolveClick" text="Solve">
+                    <FlowPane.margin>
+                        <Insets left="10.0" />
+                    </FlowPane.margin>
+                </Button>
+            </children>
+        </FlowPane>
+    </top>
+</BorderPane>

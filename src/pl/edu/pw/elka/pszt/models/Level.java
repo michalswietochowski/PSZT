@@ -64,15 +64,17 @@ public class Level {
         this.map = map;
     }
 
+    public String toString() {
+        return String.format("Level %d", this.number);
+    }
+
     /**
      * For testing purposes
      *
      * @return debug string
      */
-    public String toString() {
-    	String maps = String.format("Level %d\n", this.number) + this.map.toString();
-    	maps += this.movablesMap.toString();
-        return maps;
+    public String dump() {
+        return this.toString() + this.map + this.movablesMap;
     }
 
 	public MovablesMap getMovablesMap() {
