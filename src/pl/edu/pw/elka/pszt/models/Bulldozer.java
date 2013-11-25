@@ -11,4 +11,8 @@ public class Bulldozer extends MovableObject {
         return "BU";
     }
 	
+    @Override
+    public String getImageUri() {
+        return "file:resources/images/bulldozer.png";
+    }
 }
