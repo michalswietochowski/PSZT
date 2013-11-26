@@ -132,6 +132,10 @@ public class MovablesMap {
        this.movables[x][y] = movableObject;
    }
 
+   public MovableObject getMovableObject(int x, int y) {
+       return this.movables[x][y];
+   }
+
    @Override
    public String toString() {
        String string = String.format("Map %dx%d:\n", this.width, this.height);
