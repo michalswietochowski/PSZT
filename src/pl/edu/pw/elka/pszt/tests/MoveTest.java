@@ -100,6 +100,7 @@ public class MoveTest {
 	
 	@Test
 	public void moveTest() {
+		 Move current = round1.getMoveTree().getCurrentNode();
 		canMoveForwardTest();
 		canMoveLeftTest();
 		canMoveRightTest();
@@ -114,18 +115,28 @@ public class MoveTest {
 		assertEquals(round1.h(barrelSpotPairs.get(0)), 4);
 		assertEquals(round1.h(barrelSpotPairs.get(1)), 3);
 		assertEquals(round1.h(barrelSpotPairs.get(2)), 3);
-		
+		round1.setInitialMove(initMoveN);
 		// g - moves count
 		assertTrue(round1.g()==0);
-		Move nextMove = initMoveN.calcNextMove('F');
+		Move nextMove = round1.getInitialMove().calcNextMove('F');
+		round1.checkMoves();
 		round1.move(nextMove);
 		assertTrue(round1.g()==1);
+		System.out.println(round1.getLevel().getMovablesMap().toString());
+		
 		nextMove = nextMove.calcNextMove('L');
+		round1.checkMoves();
 		round1.move(nextMove);
 		assertTrue(round1.g()==2);
+		System.out.println(round1.getLevel().getMovablesMap().toString());
+		
 		nextMove = nextMove.calcNextMove('F');
+		round1.checkMoves();
 		round1.move(nextMove);
+		System.out.println(round1.getLevel().getMovablesMap().toString());
+		System.out.println("g " + round1.g());
 		assertTrue(round1.g()==3);
+		
 		
 		assertEquals(round1.h(barrelSpotPairs.get(0)), 3);
 		assertEquals(round1.h(barrelSpotPairs.get(1)), 4);
@@ -168,11 +179,13 @@ public class MoveTest {
 	@Test
 	public void minMoveTest(){
 		
-		//round1.addLastMove(initMoveW);
+		round1.setInitialMove(initMoveN);
+		
+		//round1.setInitialMove(initMoveW);
 		round1.setBarrelSpotPairs(barrelSpotPairs);
 		System.out.println("\n minMoveTest \n");
 		System.out.println(round1.getLevel().getMovablesMap().toString());
-		/*
+		
 		round1.checkMoves();
 		Move minMove = round1.findMinMove();
 		round1.move(minMove);
@@ -197,58 +210,82 @@ public class MoveTest {
 		minMove = round1.findMinMove();
 		round1.move(minMove);
 		System.out.println(round1.getLevel().getMovablesMap().toString());
-		*/
-		round1.start(barrelSpotPairs, initMoveN);
+		
+		//round1.start(barrelSpotPairs, initMoveN);
 	}
 
 	
 	private void canMoveForwardTest(){
 		System.out.println("\n canMoveForwardTest \n");
-		 
-		round1.addLastMove(initMoveN);
-		assertTrue(round1.checkMove('F'));
-		round1.addLastMove(initMoveE);
-		assertFalse(round1.checkMove('F'));
-		round1.addLastMove(initMoveS);
-		assertTrue(round1.checkMove('F'));
-		round1.addLastMove(initMoveW);
-		assertTrue(round1.checkMove('F'));
+		
+		round1.setInitialMove(initMoveN);
+		Move current = round1.getMoveTree().getCurrentNode();
+		assertTrue(round1.checkMove(current, 'F'));
+		
+		round1.setInitialMove(initMoveE);
+		current = round1.getMoveTree().getCurrentNode();
+		assertFalse(round1.checkMove(current,'F'));
+		
+		round1.setInitialMove(initMoveS);
+		current = round1.getMoveTree().getCurrentNode();
+		assertTrue(round1.checkMove(current,'F'));
+		
+		round1.setInitialMove(initMoveW);
+		current = round1.getMoveTree().getCurrentNode();
+		assertTrue(round1.checkMove(current,'F'));
 		
 	}	
 	
 	private void canMoveLeftTest(){
 		System.out.println("\n canMoveLeftTest \n");
 		
-		round1.addLastMove(initMoveN);
-		assertTrue(round1.checkMove('L'));
-		round1.addLastMove(initMoveE);
-		assertTrue(round1.checkMove('L'));
-		round1.addLastMove(initMoveS);
-		assertFalse(round1.checkMove('L'));
-		round1.addLastMove(initMoveW);
-		assertTrue(round1.checkMove('L'));
+		round1.setInitialMove(initMoveN);
+		Move current = round1.getMoveTree().getCurrentNode();
+		assertTrue(round1.checkMove(current,'L'));
+		
+		round1.setInitialMove(initMoveE);
+		current = round1.getMoveTree().getCurrentNode();
+		assertTrue(round1.checkMove(current,'L'));
+		
+		round1.setInitialMove(initMoveS);
+		current = round1.getMoveTree().getCurrentNode();
+		assertFalse(round1.checkMove(current,'L'));
+		
+		round1.setInitialMove(initMoveW);
+		current = round1.getMoveTree().getCurrentNode();
+		assertTrue(round1.checkMove(current,'L'));
+		
 		
 	}
 	
 	private void canMoveRightTest(){
 		System.out.println("\n canMoveRightTest \n");
 		
-		round1.addLastMove(initMoveN);
-		assertFalse(round1.checkMove('R'));
-		round1.addLastMove(initMoveE);
-		assertTrue(round1.checkMove('R'));
-		round1.addLastMove(initMoveS);
-		assertTrue(round1.checkMove('R'));
-		round1.addLastMove(initMoveW);
-		assertTrue(round1.checkMove('R'));
+		round1.setInitialMove(initMoveN);
+		Move current = round1.getMoveTree().getCurrentNode();
+		assertFalse(round1.checkMove(current,'R'));
+		
+		round1.setInitialMove(initMoveE);
+		current = round1.getMoveTree().getCurrentNode();
+		assertTrue(round1.checkMove(current,'R'));
+		
+		round1.setInitialMove(initMoveS);
+		current = round1.getMoveTree().getCurrentNode();
+		assertTrue(round1.checkMove(current,'R'));
+		
+		round1.setInitialMove(initMoveW);
+		current = round1.getMoveTree().getCurrentNode();
+		assertTrue(round1.checkMove(current,'R'));
 		
 	}
 	
 	private void moveBulldozerTest(){
+		
 		System.out.println("\n moveBulldozerTest \n");
 		System.out.println(round1.getLevel().getMovablesMap().toString());
 		
 		Move nextMove = initMoveN.calcNextMove('F');
+		round1.checkMoves();
 		round1.move(nextMove);
 		int [] bulldozerCoord = round1.getLevel().getMovablesMap().findBulldozer();
 		
@@ -256,6 +293,7 @@ public class MoveTest {
 		assertTrue(bulldozerCoord[0]==nextMove.getXo());
 		assertTrue(bulldozerCoord[1]==nextMove.getYo());
 		nextMove = nextMove.calcNextMove('L');
+		round1.checkMoves();
 		round1.move(nextMove);
 		//
 		System.out.println(round1.getLevel().getMovablesMap().toString());
@@ -265,6 +303,7 @@ public class MoveTest {
 		assertTrue(bulldozerCoord[1]==nextMove.getYo());
 		
 		nextMove = nextMove.calcNextMove('F');
+		round1.checkMoves();
 		round1.move(nextMove);
 		bulldozerCoord = round1.getLevel().getMovablesMap().findBulldozer();
 		assertTrue(bulldozerCoord[0]==nextMove.getXo());
@@ -272,6 +311,7 @@ public class MoveTest {
 		assertTrue(round1.getLevel().getMovablesMap().getMovables()[1][2].getClass()==Barrel.class);
 		
 		System.out.println(round1.getLevel().getMovablesMap().toString());
+		
 	}
 	
 	

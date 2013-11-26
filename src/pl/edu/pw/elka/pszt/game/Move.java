@@ -1,8 +1,13 @@
 package pl.edu.pw.elka.pszt.game;
 
+import java.util.ArrayList;
+
 public class Move {
 	private int xi, yi, xo, yo;
 	private boolean movedBarrel=false;
+	private ArrayList<Move> children;
+	private Move parent;
+	private boolean isDeadEnd;
 	
 	public Move(int xi, int yi, int xo, int yo){
 		this.xi =xi;
@@ -28,10 +33,19 @@ public class Move {
 		//System.out.println("Next move " + nextMove.toString());
 		return nextMove;
 	}
-	
-	
-	
-	
+	public boolean areAllChildrenDeadEnd(){
+		if(children== null){
+			return false;
+		}else {
+			for (Move child : children) {
+				if(!child.isDeadEnd()){
+					return false;
+				}
+			}
+		}
+		return true;
+		
+	}
 	public int getYo() {
 		return yo;
 	}
@@ -78,9 +92,9 @@ public class Move {
 	        	if(this.xo==other.xo){
 	        		if(this.yi==other.yi){
 	        			if(this.yo==other.yo){
-	        				if(this.movedBarrel==other.movedBarrel){
+	        				//if(this.movedBarrel==other.movedBarrel){
 	        					return true;
-	        		        }
+	        		        //}
 	        	        }
 	    	        }
 		        }
@@ -95,5 +109,35 @@ public class Move {
 	public void setMovedBarrel(boolean movedBarrel) {
 		this.movedBarrel = movedBarrel;
 	}
+
+	public Move getParent() {
+		return parent;
+	}
+
+	public void setParent(Move parent) {
+		this.parent = parent;
+	}
+
+	public boolean isDeadEnd() {
+		return isDeadEnd;
+	}
+
+	public void setDeadEnd(boolean isDeadEnd) {
+		this.isDeadEnd = isDeadEnd;
+	}
+
+	public ArrayList<Move> getChildren() {
+		return children;
+	}
+
+	public void setChildren(ArrayList<Move> children) {
+		this.children = children;
+	}
 	
+	public int getSize(){
+		if(parent == null){
+			return 0;
+		}else 
+			return parent.getSize() +1;
+	}
 }
