@@ -2,16 +2,21 @@ package pl.edu.pw.elka.pszt.game;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 
 import pl.edu.pw.elka.pszt.models.Barrel;
 import pl.edu.pw.elka.pszt.models.BarrelSpotPair;
+import pl.edu.pw.elka.pszt.models.Bulldozer;
 import pl.edu.pw.elka.pszt.models.Level;
 import pl.edu.pw.elka.pszt.models.Spot;
 
 public class Round {
 
-	private Level level;
+	//private Level currentLevel;
+	//private Level originLevel;
+	//
+	
 	//private ArrayList<Move> availableMoves;
 	//private ArrayList<Move> forbidenMoves;
 	//private ArrayList<Move> executedMoves;
@@ -23,22 +28,16 @@ public class Round {
 	//private Move lastMove;
 	
 	public Round(Level level, Move initialMove){
-		this.level = level;
-		/*availableMoves = new ArrayList<Move>();
-		forbidenMoves = new ArrayList<Move>();
-		executedMoves = new ArrayList<Move>();
-		this.executedMoves.add(initialMove);
-		*/
+		this.currentLevel = level;
+		this.originLevel = level;
 		moveTree = new MoveTree();
 		moveTree.setRoot(initialMove);
 		
 	}
 	
 	public Round(Level level){
-		this.level = level;
-		/*availableMoves = new ArrayList<Move>();
-		forbidenMoves = new ArrayList<Move>();
-		executedMoves = new ArrayList<Move>();*/
+		this.currentLevel = level;
+		this.originLevel = level;
 		moveTree = new MoveTree();
 	}
 
@@ -60,7 +59,7 @@ public class Round {
 					goBack(executedMoves.get(executedMoves.size()-1).isMovedBarrel());
 				}
 				System.out.println("move # " + count++);
-				System.out.println(level.getMovablesMap().toString());
+				System.out.println(currentLevel.getMovablesMap().toString());
 				try {
 					System.in.read();
 				} catch (IOException e) {
@@ -78,111 +77,114 @@ public class Round {
 	public void checkMoves(Move move){
 		ArrayList<Move> children = new ArrayList<Move>();
 		if(checkMove(move, 'F')) {
-			children.add(moveTree.getCurrentNode().calcNextMove('F'));
+			Move child = move.calcNextMove('F');
+			child.setF(g() + h(child, executingPair));
+			child.setParent(move);
+			children.add(child);
 		}
-			//availableMoves.add(executedMoves.get(executedMoves.size()-1).calcNextMove('F'));
-		if(checkMove(move, 'L')) 
-			children.add(moveTree.getCurrentNode().calcNextMove('L'));
-			//availableMoves.add(executedMoves.get(executedMoves.size()-1).calcNextMove('L'));
-		if(checkMove(move, 'R')) 
-			children.add(moveTree.getCurrentNode().calcNextMove('R'));
-			//availableMoves.add(executedMoves.get(executedMoves.size()-1).calcNextMove('R'));
-		moveTree.getCurrentNode().setChildren(children);
-		/*System.out.println("forbiden" + forbidenMoves.size() + " " + forbidenMoves);
-		removeDuplicatesFromMoves();
-		System.out.println("executed" + executedMoves.size() + " " + executedMoves);
-		System.out.println("available " + availableMoves);*/
+		if(checkMove(move, 'L')) {
+			Move child = move.calcNextMove('L');
+			child.setF(g() + h(child, executingPair));
+			child.setParent(move);
+			children.add(child);
+		}
+		if(checkMove(move, 'R')) {
+			Move child = move.calcNextMove('R');
+			child.setF(g() + h(child, executingPair));
+			child.setParent(move);
+			children.add(child);
+		}
+		move.setChildren(children);
+		//System.out.println("dla" + move+"znalezione ruchy " + children );
 		if(children.size()==0){
-			moveTree.getCurrentNode().setDeadEnd(true);
-			moveTree.setCurrentNode(moveTree.getCurrentNode().getParent());
+			move.setDeadEnd(true);
+			moveTree.setCurrentNode(move.getParent());
 		}
 	}
 	
 	public boolean checkMove(Move move, char to){
-		//Move nextMove;
+
 		Move nextMove = move.calcNextMove(to);
-		/*for (Move forbidenMove : forbidenMoves) {
-			if(forbidenMove.equals(nextMove)){
-				return false;
-			}
-		}
-		*/
-		boolean canMove = level.canMove(nextMove);
+		
+		boolean canMove = currentLevel.canMove(nextMove);
 		if(nextMove.areAllChildrenDeadEnd()){
 			return false;
 		}
 		
-		
-		/*if(!canMove){
-			forbidenMoves.add(nextMove);
-		}
-		for (Move executedMove : executedMoves) {
-			if(executedMove.equals(nextMove)){
-				return false;
-			}
-		}
-		*/
-		
+	
 		return canMove;
 	}
 	
-	/*
-	private void removeDuplicatesFromMoves(){
-		ArrayList<Move> forbidenMovesNew = new ArrayList<Move>();
-		/*ArrayList<Move> executedMovesNew = new ArrayList<Move>();
-		for (Move executed : executedMoves) {
-			
-		}*//*
-		for (Move forbiden : forbidenMoves) {
-			for (Move move : forbidenMovesNew) {
-				//System.out.println("porónanie " + move + " " + forbiden);
-				if(forbiden.equals(move)){
-					//System.out.println("wykryl zawieranie");
-				}
-			}
-			if(contains(forbidenMovesNew, forbiden)){
-				forbidenMovesNew = remove(forbidenMovesNew, forbiden);
-				System.out.println("wykryl zawieranie");
-			}
-			//System.out.println("forbiden after cleaning " +  forbidenMovesNew.size());
-			//System.out.println("forbiden cleaning " + forbiden);
-			forbidenMovesNew.add(forbiden);
-			//
-			
-			
+	public Move generateNewMovesPop(){
+		ArrayList<Move> youngest = findYoungest(moveTree.getRoot());
+		for (Move move : youngest) {
+			//System.out.println("szukam ruchów dla dziecka " + move);
+			checkMoves(move);
 		}
-		System.out.println("forbiden after cleaning " +  forbidenMovesNew.size() + " " + forbidenMovesNew);		
-		//forbidenMoves.clear();
-		forbidenMoves = forbidenMovesNew;
-		//executedMoves.clear();
-		//executedMoves = executedMovesNew;
+		System.out.println("youngest " + youngest);
+		return findMinMoveFrom(youngest);
 	}
-	*/
 	
-	private boolean contains(ArrayList<Move> list, Move move){
-		for (Move tmove : list) {
-			if(move.equals(tmove)){
-				
-				return true;
+	private ArrayList<Move> findYoungest(Move move){
+		ArrayList<Move> moves = new ArrayList<Move>();
+		if(move.getChildren()==null){
+			if(!move.isDeadEnd()){
+			
+				moves.add(move);
+			}else {
+				return null;
+			}
+			
+			//System.out.println("add move " + move);
+		}else {
+			for (Move child : move.getChildren()) {
+				//System.out.println("child " + child);
+				moves.addAll(findYoungest(child));
+				//System.out.println("youngest childs " +findYoungest(child));
 			}
 		}
+		return moves;
+	}
+	
+	
+	
+	private Move findMinMoveFrom(ArrayList<Move> moves){
+		int fmin = 0;
+		Move minMove=null;
+		for (Move move : moves) {
+			if(minMove==null){
+				minMove = move;
+				fmin = minMove.getF();
+			}else {
+				if(move.getF()<minMove.getF()){
+					minMove = move;
+					fmin = minMove.getF();
+				}
+				
+			}
+			System.out.println(" comparing " + move + move.getF());
+		}
+		return minMove;
+	}
+	
+	
+	public boolean isBarrelAtSpot(BarrelSpotPair<Barrel, Spot> pair){
+		/*if(h(pair)==2){
+			return true;
+		}*/
 		return false;
 	}
 	
-	private ArrayList<Move>  remove(ArrayList<Move> list, Move move){
-		ArrayList<Move> listnew = new ArrayList<Move>(list);
-		for (Move tmove : list) {
-			if(move.equals(tmove)){
-				listnew.remove(tmove);				
-			}
-		}
-		list = listnew;
-		//System.out.println("list after removal " + list );
-		return listnew;
-	}
+	
+	
+	
+	
+	
+	
+	
 	
 	public void move(Move nextMove){
-		level.move(nextMove);
+		currentLevel.move(nextMove);
 		System.out.println("loking for " + nextMove.toString());
 		for (Move child : moveTree.getCurrentNode().getChildren()) {
 			System.out.println(child);
@@ -201,130 +203,92 @@ public class Round {
 		
 	}
 	
+	public void moveFromRoot(Move move){
+		ArrayList<Move> moves = new ArrayList<Move>();
+		moves.add(move);
+		System.out.println("parent "+ move.getParent());
+		while(move.getParent() != null && move.getParent()!=moveTree.getRoot()){
+			moves.add(move);
+			move = move.getParent();
+			System.out.println("inside the loop "+ move);
+		}
+		Collections.reverse(moves);
+		currentLevel = originLevel;
+		for (Move move2 : moves) {
+			currentLevel.move(move2);
+		}
+		System.out.println("lista ruchów " + 	moves);
+	}
 	
 	
 	public Move findMinMove(){
 		
-		Move minMove = null;//= availableMoves.get(0);
-		//moveMin(minMove);
-		int fmin =0;//= g() + h(executingPair);
-		//goBackMin(availableMoves.get(0).isMovedBarrel());
-		
-		for (Move move: moveTree.getCurrentNode().getChildren()){
-			
-			
-			
-			/*if(!forbidenMoves.contains(availableMoves.get(i))){
-				if(minMove == null){
-					minMove = availableMoves.get(i);
-					moveMin(minMove);
-					fmin = g() + h(executingPair);
-					
-				}else 				
-				if(!minMove.equals(availableMoves.get(i))){
-					moveMin(availableMoves.get(i));
-					if( g() + h(executingPair) < fmin) {
-						fmin = g() + h(executingPair);
-						minMove = availableMoves.get(i);
-						}
-					}
-				goBackMin();
-			}*/
-		}
-		return minMove;
+		return findMove(moveTree.getCurrentNode());
 	}
-	/*
-	public void moveMin(Move nextMove){
-		level.move(nextMove);
-		//executedMoves.add(nextMove);
-		//System.out.println( "moved " + nextMove.toString());
-	}*/
 	
-	public void goBackMin(//boolean movedBarrel
-			){
-		/*
-		Move lastMove = executedMoves.get(executedMoves.size()-1);
-		Move reverseMove = new Move(
-				lastMove.getXo(),
-				lastMove.getYo(),
-				lastMove.getXi(),
-				lastMove.getYi()
-				);
-		level.move(reverseMove);
-		//System.out.println("want to remove " + lastMove);
-		executedMoves = remove(executedMoves, lastMove);
-		//System.out.println("want to remove " + reverseMove);
-		executedMoves = remove(executedMoves, reverseMove);
-		
-		if(lastMove.isMovedBarrel()){
-			int diffX = lastMove.getXo() - lastMove.getXi();
-			int diffY = lastMove.getYo() - lastMove.getYi();
-			reverseMove = new Move(
-				lastMove.getXo() + diffX,
-				lastMove.getYo() + diffY,
-				lastMove.getXi() + diffX,
-				lastMove.getYi() + diffY
-				);
-			level.move(reverseMove);
-			executedMoves = remove(executedMoves, lastMove);
-			executedMoves = remove(executedMoves, reverseMove);
-			//availableMoves.add(lastMove);
-		}*/
+	public Move findMove(Move move){
+		ArrayList<Move> children = new ArrayList<Move>();
+		if(move.getChildren()!=null){
+			for (Move m : move.getChildren()) {
+				if(!m.areAllChildrenDeadEnd()){
+					children.add(findMove(m));
+				}else {
+					return null;
+				}
+			}
+			Move min = null;
+			for (Move child : children) {
+				if(min ==null){
+					min =child;
+				}else {
+					if(child.getF()<min.getF()){
+						min=child;
+					}
+					
+				}
+			}
+			return min;
+		}
+		return move.getParent();
 	}
+	
+	
+
 	
 	public int g(){
 		return moveTree.getCurrentNode().getSize();
 	}
 	
 	
-	public int h(BarrelSpotPair<Barrel, Spot> pair){
-		int[] barrel = level.getMovablesMap().findBarrel(pair.getLeft());
-		int[] spot = level.getMap().findSpot(pair.getRight());
-		int[] bulldozer = level.getMovablesMap().findBulldozer();
-		int h1 = Math.abs(barrel[0] -bulldozer[0]) + Math.abs(barrel[1] -bulldozer[1]);
+	public int h(Move move, BarrelSpotPair<Barrel, Spot> pair){
+		int[] barrel = currentLevel.getMovablesMap().findBarrel(pair.getLeft());
+		int[] spot = currentLevel.getMap().findSpot(pair.getRight());
+		int[] bulldozer = currentLevel.getMovablesMap().findBulldozer();
+		int h1 = Math.abs(barrel[0] -move.getXo()) + Math.abs(barrel[1] -move.getYo());
 		int h2 = Math.abs(barrel[0] -spot[0]) + Math.abs(barrel[1] -spot[1]);
 		return h1+h2;
 		
 	}
 	
-	public void goBack(boolean movedBarrel){
-		/*Move lastMove = executedMoves.get(executedMoves.size()-1);
-		Move reverseMove = new Move(
-				lastMove.getXo(),
-				lastMove.getYo(),
-				lastMove.getXi(),
-				lastMove.getYi()
-				);
-		move(reverseMove);
-		forbidenMoves.add(lastMove);
-		executedMoves = remove(executedMoves, lastMove);
-		executedMoves = remove(executedMoves, reverseMove);
+	public int h(BarrelSpotPair<Barrel, Spot> pair){
+		int[] barrel = currentLevel.getMovablesMap().findBarrel(pair.getLeft());
+		int[] spot = currentLevel.getMap().findSpot(pair.getRight());
+		int[] bulldozer = currentLevel.getMovablesMap().findBulldozer();
+		int h1 = Math.abs(barrel[0] -bulldozer[0] + Math.abs(barrel[1] -bulldozer[1]));
+		int h2 = Math.abs(barrel[0] -spot[0]) + Math.abs(barrel[1] -spot[1]);
+		return h1+h2;
 		
-		
-		if(movedBarrel){
-			int diffX = lastMove.getXo() - lastMove.getXi();
-			int diffY = lastMove.getYo() - lastMove.getYi();
-			reverseMove = new Move(
-				lastMove.getXo() + diffX,
-				lastMove.getYo() + diffY,
-				lastMove.getXi() + diffX,
-				lastMove.getYi() + diffY
-				);
-			move(reverseMove);
-			executedMoves = remove(executedMoves, lastMove);
-			executedMoves = remove(executedMoves, reverseMove);
-			
-		}*/
 	}
+	
 	
 	
 	
 	public Level getLevel() {
-		return level;
+		return currentLevel;
 	}
 
 	public void setLevel(Level level) {
-		this.level = level;
+		this.originLevel = level;
 	}
 /*
 	public Move getLastMove() {

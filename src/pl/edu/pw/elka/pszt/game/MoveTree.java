@@ -6,7 +6,9 @@ public class MoveTree {
 	
 	
 	
-	
+	public Move getMin(){
+		return null;
+	}
 	
 	
 	

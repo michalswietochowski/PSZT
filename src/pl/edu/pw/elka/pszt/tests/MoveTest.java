@@ -3,6 +3,7 @@ package pl.edu.pw.elka.pszt.tests;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.junit.Test;
 
@@ -101,6 +102,7 @@ public class MoveTest {
 	@Test
 	public void moveTest() {
 		 Move current = round1.getMoveTree().getCurrentNode();
+		 round1.setBarrelSpotPairs(barrelSpotPairs);
 		canMoveForwardTest();
 		canMoveLeftTest();
 		canMoveRightTest();
@@ -111,6 +113,9 @@ public class MoveTest {
 	@Test
 	public void distanceFunctionsTest(){
 		System.out.println("\n distanceFunctionsTest \n");
+		
+		round1.setBarrelSpotPairs(barrelSpotPairs);
+		
 		// h - distance from bulldozer to barrel
 		assertEquals(round1.h(barrelSpotPairs.get(0)), 4);
 		assertEquals(round1.h(barrelSpotPairs.get(1)), 3);
@@ -176,11 +181,64 @@ public class MoveTest {
 		
 	}
 	
+	
+	@Test
+	public void findMinMoveFromTreeTest(){
+		
+		System.out.println("\n findMinMoveFromTreeTest \n");
+		
+		
+		ArrayList<BarrelSpotPair<Barrel, Spot>> barrelSpotPairsT = barrelSpotPairs;
+		Collections.reverse(barrelSpotPairsT);
+		round1.setBarrelSpotPairs(barrelSpotPairsT);
+		round1.setInitialMove(initMoveN);
+		
+		System.out.println("minmove " + round1.generateNewMovesPop());
+		System.out.println("new population" + round1.getMoveTree().getRoot().getChildren());
+		round1.getMoveTree().setCurrentNode( round1.getMoveTree().getRoot().getChildren().get(0));
+		Move minMove = round1.generateNewMovesPop();
+		
+		System.out.println("minmove " + minMove);
+		round1.move(minMove);
+		System.out.println("new population" + round1.getMoveTree().getRoot().getChildren().get(0).getChildren());
+		System.out.println("new population" + round1.getMoveTree().getRoot().getChildren().get(1).getChildren());
+		
+		System.out.println("minmove " + round1.generateNewMovesPop());
+		//round1.generateNewMovesPop();
+		System.out.println("new population" + round1.getMoveTree().getRoot().getChildren().get(0).getChildren().get(0).getChildren());
+		System.out.println("new population" + round1.getMoveTree().getRoot().getChildren().get(0).getChildren().get(1).getChildren());
+		System.out.println("new population" + round1.getMoveTree().getRoot().getChildren().get(1).getChildren().get(0).getChildren());
+		System.out.println("new population" + round1.getMoveTree().getRoot().getChildren().get(1).getChildren().get(1).getChildren());
+		
+		/*round1.checkMoves();
+		round1.move(nextMove);
+		assertTrue(round1.g()==1);
+		System.out.println(round1.getLevel().getMovablesMap().toString());
+		
+		nextMove = nextMove.calcNextMove('L');
+		round1.checkMoves();
+		round1.move(nextMove);
+		assertTrue(round1.g()==2);
+		System.out.println(round1.getLevel().getMovablesMap().toString());
+		
+		nextMove = nextMove.calcNextMove('F');
+		round1.checkMoves();
+		round1.move(nextMove);
+		System.out.println(round1.getLevel().getMovablesMap().toString());
+		System.out.println("g " + round1.g());
+		assertTrue(round1.g()==3);*/
+	}
+	
+	
+	
+	
+	
+	
 	@Test
 	public void minMoveTest(){
 		
 		round1.setInitialMove(initMoveN);
-		
+		round1.setBarrelSpotPairs(barrelSpotPairs);
 		//round1.setInitialMove(initMoveW);
 		round1.setBarrelSpotPairs(barrelSpotPairs);
 		System.out.println("\n minMoveTest \n");
@@ -188,27 +246,28 @@ public class MoveTest {
 		
 		round1.checkMoves();
 		Move minMove = round1.findMinMove();
-		round1.move(minMove);
+		System.out.println("minmove " + minMove);
+		round1.moveFromRoot(minMove);
 		System.out.println(round1.getLevel().getMovablesMap().toString());
 		
 		round1.checkMoves();
 		minMove = round1.findMinMove();
-		round1.move(minMove);
+		round1.moveFromRoot(minMove);
 		System.out.println( round1.getLevel().getMovablesMap().toString());
 		
 		round1.checkMoves();
 		minMove = round1.findMinMove();
-		round1.move(minMove);
+		round1.moveFromRoot(minMove);
 		System.out.println(round1.getLevel().getMovablesMap().toString());
 		
 		round1.checkMoves();
 		minMove = round1.findMinMove();
-		round1.move(minMove);
+		round1.moveFromRoot(minMove);
 		System.out.println(round1.getLevel().getMovablesMap().toString());
 		
 		round1.checkMoves();
 		minMove = round1.findMinMove();
-		round1.move(minMove);
+		round1.moveFromRoot(minMove);
 		System.out.println(round1.getLevel().getMovablesMap().toString());
 		
 		//round1.start(barrelSpotPairs, initMoveN);

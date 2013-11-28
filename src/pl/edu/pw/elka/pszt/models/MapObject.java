@@ -1,6 +1,6 @@
 package pl.edu.pw.elka.pszt.models;
 
-import javafx.scene.image.Image;
+//import javafx.scene.image.Image;
 
 /**
  * PSZT
@@ -16,7 +16,7 @@ public abstract class MapObject {
 
     public abstract String getImageUri();
 
-    public Image getImage(double requestedWidth, double requestedHeight) {
-        return new Image(getImageUri(), requestedWidth, requestedHeight, true, true);
-    }
+    //public Image getImage(double requestedWidth, double requestedHeight) {
+      //  return new Image(getImageUri(), requestedWidth, requestedHeight, true, true);
+  //  }
 }

@@ -8,6 +8,7 @@ public class Move {
 	private ArrayList<Move> children;
 	private Move parent;
 	private boolean isDeadEnd;
+	private int f;
 	
 	public Move(int xi, int yi, int xo, int yo){
 		this.xi =xi;
@@ -46,6 +47,12 @@ public class Move {
 		return true;
 		
 	}
+	
+	public Move getMinChild(){
+		return null;
+	}
+	
+	
 	public int getYo() {
 		return yo;
 	}
@@ -139,5 +146,13 @@ public class Move {
 			return 0;
 		}else 
 			return parent.getSize() +1;
+	}
+
+	public int getF() {
+		return f;
+	}
+
+	public void setF(int f) {
+		this.f = f;
 	}
 }
