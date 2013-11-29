@@ -2,6 +2,8 @@ package pl.edu.pw.elka.pszt.game;
 
 import java.util.ArrayList;
 
+import pl.edu.pw.elka.pszt.models.Level;
+
 public class Move {
 	private int xi, yi, xo, yo;
 	private boolean movedBarrel=false;
@@ -9,6 +11,7 @@ public class Move {
 	private Move parent;
 	private boolean isDeadEnd;
 	private int f;
+	//private Level level;
 	
 	public Move(int xi, int yi, int xo, int yo){
 		this.xi =xi;
@@ -155,4 +158,12 @@ public class Move {
 	public void setF(int f) {
 		this.f = f;
 	}
+/*
+	public Level getLevel() {
+		return level;
+	}
+
+	public void setLevel(Level level) {
+		this.level = level;
+	}*/
 }

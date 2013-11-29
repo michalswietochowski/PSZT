@@ -1,5 +1,7 @@
 package pl.edu.pw.elka.pszt.game;
 
+import pl.edu.pw.elka.pszt.models.Level;
+
 public class MoveTree {
 	private Move root;
 	private Move currentNode;
@@ -25,4 +27,13 @@ public class MoveTree {
 	public void setCurrentNode(Move currentNode) {
 		this.currentNode = currentNode;
 	}
+	/*
+	public void setLevel(Level level){
+		root.setLevel(level);
+		
+	}
+	public Level getLevel(){
+		return root.getLevel();
+		
+	}*/
 }
