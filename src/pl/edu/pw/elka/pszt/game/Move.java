@@ -11,6 +11,7 @@ public class Move {
 	private Move parent;
 	private boolean isDeadEnd;
 	private int f;
+	private int barellsAtSpots = 0;
 	//private Level level;
 	
 	public Move(int xi, int yi, int xo, int yo){
@@ -102,9 +103,9 @@ public class Move {
 	        	if(this.xo==other.xo){
 	        		if(this.yi==other.yi){
 	        			if(this.yo==other.yo){
-	        				//if(this.movedBarrel==other.movedBarrel){
+	        				if(this.movedBarrel==other.movedBarrel){
 	        					return true;
-	        		        //}
+	        		        }
 	        	        }
 	    	        }
 		        }
@@ -166,4 +167,12 @@ public class Move {
 	public void setLevel(Level level) {
 		this.level = level;
 	}*/
+
+	public int getBarellsAtSpots() {
+		return barellsAtSpots;
+	}
+
+	public void setBarellsAtSpots(int barellsAtSpots) {
+		this.barellsAtSpots = barellsAtSpots;
+	}
 }

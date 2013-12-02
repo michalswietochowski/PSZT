@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import pl.edu.pw.elka.pszt.models.Barrel;
 import pl.edu.pw.elka.pszt.models.BarrelSpotPair;
@@ -19,6 +20,14 @@ public class Round {
 	private ArrayList<BarrelSpotPair<Barrel, Spot>> barrelSpotPairs;
 	private BarrelSpotPair<Barrel, Spot> executingPair;
 
+	private int discardedMoves=0;
+	private int discardedMoves6=0;
+	private int discardedMoves4=0;
+	private int discardedMoves8=0;
+	private int discardedMoves10=0;
+	private int discardedMoves12=0;
+	private int discardedMoves14=0;
+	
 	public Round(Level level, Move initialMove){
 		this.level = level;		
 		moveTree = new MoveTree();
@@ -71,39 +80,104 @@ public class Round {
 		ArrayList<Move> children = new ArrayList<Move>();
 		if(checkMove(move, 'F')) {
 			Move child = move.calcNextMove('F');
-			child.setF(g() + h( executingPair));
 			child.setParent(move);
+			moveFromRoot(child);
+			child.setF(g() + h2());
 			children.add(child);
+			goBackToRoot(child);
 		}
 		if(checkMove(move, 'L')) {
 			Move child = move.calcNextMove('L');
-			child.setF(g() + h( executingPair));
 			child.setParent(move);
+			moveFromRoot(child);
+			child.setF(g() + h2());
 			children.add(child);
+			goBackToRoot(child);
+			
 		}
 		if(checkMove(move, 'R')) {
 			Move child = move.calcNextMove('R');
-			child.setF(g() + h( executingPair));
 			child.setParent(move);
+			moveFromRoot(child);
+			child.setF(g() + h2());
 			children.add(child);
+			goBackToRoot(child);
 		}
 		move.setChildren(children);
-		if(children.size()==0){
+		if(children.size()==0 || move.areAllChildrenDeadEnd()){
 			move.setDeadEnd(true);
-			moveTree.setCurrentNode(move.getParent());
+			discardedMoves++;
+			
+			//moveTree.setCurrentNode(move.getParent());
+			
+			//tutaj wyrzucanie
 		}
+		if(move.getSize()>6){
+			if(move.equals(move.getParent().getParent().getParent().getParent()) && !move.isMovedBarrel()){
+				//System.out.println("wykry³em pêtle 4");
+				move.setDeadEnd(true);
+				discardedMoves++;
+			}
+		}/*else if(move.getSize()>8){
+			if(move.equals(move.getParent().getParent().getParent().getParent().
+					getParent().getParent())){
+				move.setDeadEnd(true);
+				discardedMoves++;
+			}
+		}else if(move.getSize()>10){
+			if(move.equals(move.getParent().getParent().getParent().getParent().
+					getParent().getParent().getParent().getParent())){
+				move.setDeadEnd(true);
+				discardedMoves++;
+			}
+		}else if(move.getSize()>12){
+			if(move.equals(move.getParent().getParent().getParent().getParent()
+					.getParent().getParent().getParent().getParent()
+					.getParent().getParent())){
+				move.setDeadEnd(true);
+				discardedMoves++;
+			}
+		}else if(move.getSize()>14){
+			if(move.equals(move.getParent().getParent().getParent().getParent().
+					getParent().getParent().getParent().getParent().
+					getParent().getParent().getParent().getParent())){
+				move.setDeadEnd(true);
+				discardedMoves++;
+			}
+		}else if(move.getSize()>16){
+			if(move.equals(move.getParent().getParent().getParent().getParent().
+					getParent().getParent().getParent().getParent().
+					getParent().getParent().getParent().getParent()
+					.getParent().getParent())){
+				move.setDeadEnd(true);
+				discardedMoves++;
+			}
+		}else if(move.getSize()>18){
+			if(move.equals(move.getParent().getParent().getParent().getParent().
+					getParent().getParent().getParent().getParent().
+					getParent().getParent().getParent().getParent()
+					.getParent().getParent().getParent().getParent())){
+				move.setDeadEnd(true);
+				discardedMoves++;
+			}
+		}*/
 	}
 	
 	public boolean checkMove(Move move, char to){
 
 		Move nextMove = move.calcNextMove(to);
 		if(move!=moveTree.getRoot()){
+			//!!!
 			moveFromRoot(move);
+			moveTree.setCurrentNode(move);
+			move.setF(g() + h(executingPair));
 		}
 		boolean canMove = level.canMove(nextMove);
-		if(nextMove.areAllChildrenDeadEnd()){
+		/*if(nextMove.areAllChildrenDeadEnd()){
+			System.out.println("znalaz³em martwe dziecko");
 			return false;
-		}
+			nigdy nie znajduje
+		}*/
 		if(move!=moveTree.getRoot()){
 			goBackToRoot(move);
 		}
@@ -114,29 +188,48 @@ public class Round {
 	
 	
 	public Move generateNewMovesPop(){
-		ArrayList<Move> parents = findYoungest(moveTree.getRoot());
-		for (Move move : parents) {
+		ArrayList<Move> parents = moveTree.getYoungest(); //findYoungest();
+		
+		int size = parents.size();
+		System.out.println("size beore"  + size);
+		/*for (Move move : parents) {
 			checkMoves(move);
+		}*/
+		int i=0;
+		for (Iterator<Move> iterator = parents.iterator(); iterator.hasNext(); ) {
+		    Move move = iterator.next();
+		    checkMoves(move);
+		    if (move.isDeadEnd()) {
+		    	i++;
+		    	iterator.remove();
+		    }
 		}
+		System.out.println("usun¹³em " + i);
+		
+		
+		
 		ArrayList<Move> youngest = new ArrayList<Move>();
 		for (Move parent : parents) {
 			youngest.addAll(parent.getChildren());
 			
 		}
+		/*
 		if(youngest.size()!=1){
 			for (Move move : youngest) {
 				moveFromRoot(move);
-				moveTree.setCurrentNode(move);
-				move.setF(g() + h(executingPair));
+				//moveTree.setCurrentNode(move);
+				//move.setF(g() + h(executingPair));
 				goBackToRoot(move);
 			}
-		}
+		}*/
+		System.out.println("Discarder moves " + discardedMoves);
+		moveTree.setYoungest(youngest);
 		
 		return findMinMoveFrom(youngest);
 	}
 	
 	
-	
+	/*
 	private ArrayList<Move> findYoungest(Move move){
 		ArrayList<Move> moves = new ArrayList<Move>();
 		if(move.getChildren()==null){
@@ -148,11 +241,16 @@ public class Round {
 			
 		}else {
 			for (Move child : move.getChildren()) {
-				moves.addAll(findYoungest(child));
+				if(!child.isDeadEnd()){
+					moves.addAll(findYoungest(child));
+				}
 			}
 		}
 		return moves;
 	}
+	
+	*/
+		
 	
 	public void moveFromRoot(Move move){
 		ArrayList<Move> moves = new ArrayList<Move>();
@@ -206,16 +304,16 @@ public class Round {
 	
 	
 	private Move findMinMoveFrom(ArrayList<Move> moves){
-		int fmin = 0;
+		
 		Move minMove=null;
 		for (Move move : moves) {
 			if(minMove==null){
 				minMove = move;
-				fmin = minMove.getF();
+				
 			}else {
-				if(move.getF()<minMove.getF()){
+				if((move.getBarellsAtSpots()<minMove.getBarellsAtSpots()) || (move.getF()<minMove.getF())){
 					minMove = move;
-					fmin = minMove.getF();
+					
 				}
 				
 			}
@@ -323,7 +421,6 @@ public class Round {
 		int[] spot = level.getMap().findSpot(pair.getRight());
 		return  Math.abs(barrel[0] -spot[0]) + Math.abs(barrel[1] -spot[1]);
 	}
-	
 	
 	
 	public Level getLevel() {
