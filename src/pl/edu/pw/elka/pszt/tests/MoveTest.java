@@ -185,9 +185,9 @@ public class MoveTest {
 	
 	
 	@Test
-	public void findMinMoveFromTreeTest(){
+	public void AstarTest(){
 		
-		System.out.println("\n findMinMoveFromTreeTest \n");
+		System.out.println("\n AstarTest \n");
 	/*
 		//
 		BarrelSpotPair<Barrel, Spot> pair ;
@@ -201,60 +201,15 @@ public class MoveTest {
 		barrelSpotPairs.add(pair);
 		*/
 		//
-		
-		ArrayList<BarrelSpotPair<Barrel, Spot>> barrelSpotPairsT = barrelSpotPairs;
-		//Collections.reverse(barrelSpotPairsT);
-		astar.setBarrelSpotPairs(barrelSpotPairsT);
-		astar.setInitialMove(initMoveN);
-		int h2 =0;
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-		Date startdate = new Date();
-		
-		
-		Move minMove = astar.generateNewMovesPop();
-		for(int i=2 ;i<50; i++){
-			minMove = astar.generateNewMovesPop();
-			System.out.println("minmove # "+ i + " f=" +minMove.getF() + "  move: "+  minMove);
-			astar.moveFromRoot(minMove);
-			System.out.println(astar.getLevel().getMovablesMap());
-			h2 =  astar.h2();
-			System.out.println("FMIN =" + minMove.getF() + "=" + astar.g() + " + " + astar.h2() );
-			astar.goBackToRoot(minMove);
-			if(h2==0){
-				assertTrue(true);
-				System.out.println("route found");
-				break;
-			}
-		}
-		System.out.println("start time" + dateFormat.format(startdate));
-		Date enddate = new Date();
-		
-		System.out.println("end   time" + dateFormat.format(enddate) );
-		
-	}
-	
-	
-	
-	
-	
-	
-	@Test
-	public void minMoveTest(){
-		
-		//astar.setInitialMove(initMoveN);
-		//astar.setBarrelSpotPairs(barrelSpotPairs);
-		//astar.setInitialMove(initMoveW);
-		//astar.setBarrelSpotPairs(barrelSpotPairs);
-		System.out.println("\n minMoveTest \n");
+		//InitLevel2();
 		
 		ArrayList<BarrelSpotPair<Barrel, Spot>> barrelSpotPairsT = barrelSpotPairs;
 		Collections.reverse(barrelSpotPairsT);
 		astar.setBarrelSpotPairs(barrelSpotPairsT);
-		astar.setInitialMove(initMoveN);
-		
-		// System.out.println(astar.getLevel().getMovablesMap().toString());
-		
-		//astar.start(barrelSpotPairs, initMoveN);
+		astar.setInitialMove(initMoveS);
+		astar.run();
+		System.out.println("path size = " + astar.getPathSize());
+		assertEquals(33, astar.getPathSize());
 	}
 	
 	
@@ -434,5 +389,34 @@ public class MoveTest {
 		
 	}
 	
+	
+	
+	public void InitLevel2(){
+		
+			try {
+				
+	            level1 = LevelFactory.createFromProperties("level2");
+	            astar = new AStar(level1);
+	            initMoves();
+	            System.out.println(level1);
+	            movableMap= level1.getMovablesMap();
+	        	map = level1.getMap();
+	            barrels = movableMap.getBarrels();
+	        	spots = map.getSpots();
+	        	
+	        	BarrelSpotPair<Barrel, Spot> pair ;
+	    		barrelSpotPairs = new ArrayList<BarrelSpotPair<Barrel,Spot>>();
+	    		for (int i =0; i<4;i++) {
+	    			pair = new BarrelSpotPair<Barrel, Spot>(barrels.get(i), spots.get(i));
+	    			barrelSpotPairs.add(pair);
+	    		}
+	    		
+	        	
+	        	
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+				
+	}
 	
 }

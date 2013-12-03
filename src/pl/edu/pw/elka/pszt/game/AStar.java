@@ -1,8 +1,13 @@
 package pl.edu.pw.elka.pszt.game;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -12,21 +17,28 @@ import pl.edu.pw.elka.pszt.models.Bulldozer;
 import pl.edu.pw.elka.pszt.models.Level;
 import pl.edu.pw.elka.pszt.models.Spot;
 
-public class AStar {
+public class AStar implements Runnable{
 
 	private Level level;
 	private MoveTree moveTree;
+	private Move lastMove;
 	
 	private ArrayList<BarrelSpotPair<Barrel, Spot>> barrelSpotPairs;
 	private BarrelSpotPair<Barrel, Spot> executingPair;
 
 	private int discardedMoves=0;
-	private int discardedMovesParent=0;
+	private int maxNumberOfSteps=50;
+	
+	private Date startDate, endDate;
+	private static DateFormat DATEFORMAT =  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");;
+	
+	
 	
 	public AStar(Level level, Move initialMove){
 		this.level = level;		
 		moveTree = new MoveTree();
 		moveTree.setRoot(initialMove);
+		
 	}
 	
 	public AStar(Level level){
@@ -34,37 +46,30 @@ public class AStar {
 		moveTree = new MoveTree();
 	}
 
-	public void start(ArrayList<BarrelSpotPair<Barrel, Spot>> barrelSpotPairs, Move initMove){
-		this.barrelSpotPairs =barrelSpotPairs;
-		this.moveTree.setRoot(initMove);
-		Move move;
-		int count =1;
-		for (BarrelSpotPair<Barrel, Spot> pair : this.barrelSpotPairs) {
-			this.executingPair = pair;
-			int[] barrel = level.getMovablesMap().findBarrel(pair.getLeft());
-			int[] spot = level.getMap().findSpot(pair.getRight());
-			System.out.println("executing pair " + barrel[0] + "," + barrel[1] + " " + spot[0] + "," + spot[1]);
-			while(!isBarrelAtSpot(pair)){//jaki dodatkowy warunek, zêby sie nie krêci³ do usranej œmierci?
-				
-				move = generateNewMovesPop();
-				moveFromRoot(move);
-				System.out.println("round " + count);
-				System.out.println(level.getMovablesMap());
-				if(isBarrelAtSpot(pair)){
-					System.out.println("break ");
-					break;
-				}
-				goBackToRoot(move);
-				count++;
-				try {
-					
-					System.in.read();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+	@Override
+	public void run(){
+		
+		Date startdate = new Date();
+		Move minMove = generateNewMovesPop();
+		
+		for(int i=2 ;i<maxNumberOfSteps; i++){
+			minMove = generateNewMovesPop();
+			moveFromRoot(minMove);
+			System.out.println(getLevel().getMovablesMap());
+			
+			if(getNumberOfBarrelsAtSpot()==barrelSpotPairs.size()){
+				System.out.println("route found");
+				endDate  = new Date();
+				lastMove=minMove;
+				break;
 			}
+			goBackToRoot(minMove);
+			
 		}
+		System.out.println(getLevel().getMovablesMap());
+		System.out.println("start time" + DATEFORMAT.format(startdate));
 	}
+	
 	
 	public void checkMoves(){
 		checkMoves(moveTree.getCurrentNode());
@@ -238,7 +243,6 @@ public class AStar {
 			
 		}
 		System.out.println("Discarder moves  " + discardedMoves);
-		System.out.println("Discarder barres " + discardedMovesParent);
 		moveTree.setYoungest(youngest);
 		
 		return findMinMoveFrom(youngest);
@@ -335,9 +339,17 @@ public class AStar {
 		return minMove;
 	}
 	
+	public int getNumberOfBarrelsAtSpot(){
+		int count =0;
+		for (BarrelSpotPair<Barrel, Spot> pair : barrelSpotPairs) {
+			if(isBarrelAtSpot(pair)){
+				count++;
+			}
+		}
+		return count;
+	}
 	
 	public boolean isBarrelAtSpot(BarrelSpotPair<Barrel, Spot> pair){
-		System.out.println("is barrel at spot h2= " +h2(pair));
 		if(h2(pair)==0){
 			return true;
 		}
@@ -418,7 +430,7 @@ public class AStar {
 				return false;
 			}
 			if(level.barellAtCorner(pair.getLeft())){
-				discardedMovesParent++;
+				discardedMoves++;
 				return true;
 			}
 		}
@@ -456,6 +468,29 @@ public class AStar {
 		return moveTree;
 	}
 
-	
+	public int getMaxNumberOfSteps() {
+		return maxNumberOfSteps;
+	}
 
+	public void setMaxNumberOfSteps(int maxNumberOfSteps) {
+		this.maxNumberOfSteps = maxNumberOfSteps;
+	}
+
+	public Move getLastMove() {
+		return lastMove;
+	}
+
+	public int getPathSize(){
+		return lastMove.getSize();
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	
 }
