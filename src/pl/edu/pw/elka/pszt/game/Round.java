@@ -21,12 +21,7 @@ public class Round {
 	private BarrelSpotPair<Barrel, Spot> executingPair;
 
 	private int discardedMoves=0;
-	private int discardedMoves6=0;
-	private int discardedMoves4=0;
-	private int discardedMoves8=0;
-	private int discardedMoves10=0;
-	private int discardedMoves12=0;
-	private int discardedMoves14=0;
+	private int discardedMovesbarrels=0;
 	
 	public Round(Level level, Move initialMove){
 		this.level = level;		
@@ -65,7 +60,6 @@ public class Round {
 					
 					System.in.read();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -107,60 +101,81 @@ public class Round {
 		if(children.size()==0 || move.areAllChildrenDeadEnd()){
 			move.setDeadEnd(true);
 			discardedMoves++;
-			
-			//moveTree.setCurrentNode(move.getParent());
-			
-			//tutaj wyrzucanie
-		}
-		if(move.getSize()>6){
+		}else if(move.getSize()>6){
 			if(move.equals(move.getParent().getParent().getParent().getParent()) && !move.isMovedBarrel()){
-				//System.out.println("wykry³em pêtle 4");
 				move.setDeadEnd(true);
 				discardedMoves++;
 			}
-		}/*else if(move.getSize()>8){
-			if(move.equals(move.getParent().getParent().getParent().getParent().
+		}
+		
+		if(move.getSize()>8){
+			if(!move.isMovedBarrel() && 
+					move.equals(move.getParent().getParent().getParent().getParent().
 					getParent().getParent())){
 				move.setDeadEnd(true);
 				discardedMoves++;
 			}
-		}else if(move.getSize()>10){
-			if(move.equals(move.getParent().getParent().getParent().getParent().
+		}
+		/*
+		if(barrelAtCorner()){
+			move.setDeadEnd(true);
+			discardedMovesbarrels++;
+		}*/
+		
+		if(move.getSize()>10){
+			if(!move.isMovedBarrel() && 
+					move.equals(move.getParent().getParent().getParent().getParent().
 					getParent().getParent().getParent().getParent())){
 				move.setDeadEnd(true);
 				discardedMoves++;
 			}
-		}else if(move.getSize()>12){
-			if(move.equals(move.getParent().getParent().getParent().getParent()
+		}
+
+		if(move.getSize()>12){
+			if(!move.isMovedBarrel() && 
+					move.equals(move.getParent().getParent().getParent().getParent()
 					.getParent().getParent().getParent().getParent()
 					.getParent().getParent())){
 				move.setDeadEnd(true);
 				discardedMoves++;
 			}
-		}else if(move.getSize()>14){
-			if(move.equals(move.getParent().getParent().getParent().getParent().
+		}
+
+		if(move.getSize()>14){
+			if(!move.isMovedBarrel() && 
+					move.equals(move.getParent().getParent().getParent().getParent().
 					getParent().getParent().getParent().getParent().
 					getParent().getParent().getParent().getParent())){
 				move.setDeadEnd(true);
 				discardedMoves++;
 			}
-		}else if(move.getSize()>16){
-			if(move.equals(move.getParent().getParent().getParent().getParent().
+		}
+		
+		if(move.getSize()>16){
+			if(!move.isMovedBarrel() && 
+					move.equals(move.getParent().getParent().getParent().getParent().
 					getParent().getParent().getParent().getParent().
 					getParent().getParent().getParent().getParent()
 					.getParent().getParent())){
 				move.setDeadEnd(true);
 				discardedMoves++;
 			}
-		}else if(move.getSize()>18){
-			if(move.equals(move.getParent().getParent().getParent().getParent().
+		}
+		/*
+		if(move.getSize()>16){
+			if(!move.isMovedBarrel() && 
+					move.equals(move.getParent().getParent().getParent().getParent().
 					getParent().getParent().getParent().getParent().
 					getParent().getParent().getParent().getParent()
 					.getParent().getParent().getParent().getParent())){
 				move.setDeadEnd(true);
 				discardedMoves++;
 			}
-		}*/
+		}
+
+	*/
+		
+		
 	}
 	
 	public boolean checkMove(Move move, char to){
@@ -192,9 +207,6 @@ public class Round {
 		
 		int size = parents.size();
 		System.out.println("size beore"  + size);
-		/*for (Move move : parents) {
-			checkMoves(move);
-		}*/
 		int i=0;
 		for (Iterator<Move> iterator = parents.iterator(); iterator.hasNext(); ) {
 		    Move move = iterator.next();
@@ -205,24 +217,13 @@ public class Round {
 		    }
 		}
 		System.out.println("usun¹³em " + i);
-		
-		
-		
 		ArrayList<Move> youngest = new ArrayList<Move>();
 		for (Move parent : parents) {
 			youngest.addAll(parent.getChildren());
 			
 		}
-		/*
-		if(youngest.size()!=1){
-			for (Move move : youngest) {
-				moveFromRoot(move);
-				//moveTree.setCurrentNode(move);
-				//move.setF(g() + h(executingPair));
-				goBackToRoot(move);
-			}
-		}*/
-		System.out.println("Discarder moves " + discardedMoves);
+		System.out.println("Discarder moves  " + discardedMoves);
+		System.out.println("Discarder barres " + discardedMovesbarrels);
 		moveTree.setYoungest(youngest);
 		
 		return findMinMoveFrom(youngest);
@@ -313,9 +314,7 @@ public class Round {
 			}else {
 				if((move.getBarellsAtSpots()<minMove.getBarellsAtSpots()) || (move.getF()<minMove.getF())){
 					minMove = move;
-					
 				}
-				
 			}
 		}
 		return minMove;
@@ -329,22 +328,6 @@ public class Round {
 		}
 		return false;
 	}
-	
-	/*
-	public void move(Move nextMove){
-		level.move(nextMove);
-		for (Move child : moveTree.getCurrentNode().getChildren()) {
-			if(child.equals(nextMove)){
-				if(nextMove.isMovedBarrel()) {
-					child.setMovedBarrel(true);
-				}
-				child.setParent(moveTree.getCurrentNode());
-				moveTree.setCurrentNode(child);
-			}
-			int i =0;
-			i++;
-		}
-	}*/
 	
 	
 	/*
@@ -390,20 +373,11 @@ public class Round {
 		for (BarrelSpotPair<Barrel, Spot> pair : barrelSpotPairs) {
 			int[] barrel = level.getMovablesMap().findBarrel(pair.getLeft());
 			int[] bulldozer = level.getMovablesMap().findBulldozer();
-			//System.out.println("barrel " + barrel[0] + "," + barrel[1] );
-			//System.out.println( "bulldozer " + bulldozer[0] + "," + bulldozer[1]);
 			if(barrel==null){
 				System.out.println( "bef " + level.getMovablesMap());
 			}
-			//System.out.println( "befbar  " + barrel[0]);
-			//System.out.println( "befbul  " + bulldozer[0]);
 			h1 += Math.abs(barrel[0] -bulldozer[0]) + Math.abs(barrel[1] -bulldozer[1]);
 		}
-		//int[] barrel = level.getMovablesMap().findBarrel(pair.getLeft());
-		//int[] bulldozer = level.getMovablesMap().findBulldozer();
-		//System.out.println("barrel " + barrel[0] + "," + barrel[1] );
-		//System.out.println( "bulldozer " + bulldozer[0] + "," + bulldozer[1]);
-		
 		return h1; //Math.abs(barrel[0] -bulldozer[0]) + Math.abs(barrel[1] -bulldozer[1]);
 	}
 	
@@ -421,6 +395,21 @@ public class Round {
 		int[] spot = level.getMap().findSpot(pair.getRight());
 		return  Math.abs(barrel[0] -spot[0]) + Math.abs(barrel[1] -spot[1]);
 	}
+	
+	
+	public boolean barrelAtCorner() {
+		for (BarrelSpotPair<Barrel, Spot> pair  : barrelSpotPairs) {
+			if(h2(pair)==0){
+				return false;
+			}
+			if(level.barellAtCorner(pair.getLeft())){
+				discardedMovesbarrels++;
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	
 	
 	public Level getLevel() {
@@ -451,5 +440,7 @@ public class Round {
 	public MoveTree getMoveTree(){
 		return moveTree;
 	}
+
+	
 
 }

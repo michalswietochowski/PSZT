@@ -1,5 +1,7 @@
 package pl.edu.pw.elka.pszt.models;
 
+import java.util.ArrayList;
+
 import pl.edu.pw.elka.pszt.game.Move;
 
 /**
@@ -50,7 +52,69 @@ public class Level {
     	
     }
     
+    public boolean barellAtCorner(Barrel barrel) {
+	
+		int walls = barrelWalls(barrel);
+		
+		ArrayList<Barrel> barrels = getMovablesMap().getBarrels();
+		/*for (Barrel barrel2 : barrels) {
+			//if(!barrel2.equals(barrel)){
+				if(areNeighbours(barrel, barrel2)){
+					walls+= barrelWalls(barrel2);
+					if(walls>1){
+						return true;
+					}
+				}
+			//}
+		}*/
+		
+		
+		
+		if(walls>1){
+			return true;
+		}else 
+			return false;
+	} 
     
+    public int barrelWalls(Barrel barrel){
+    	int[] coords = getMovablesMap().findBarrel(barrel);
+    	/*System.out.println("coords " + coords[0] + coords[1]);
+    	System.out.println("coords " + !map.canMove(coords[0]-1, coords[1]));
+    	System.out.println("coords " + !map.canMove(coords[0]+1, coords[1]));
+    	System.out.println("coords " + !map.canMove(coords[0], coords[1]-1));
+    	System.out.println("coords " + !map.canMove(coords[0], coords[1]+1));
+    	*/
+		int walls =0;
+		if(!map.canMove(coords[0]-1, coords[1])){
+			walls++;
+		}
+		if(!map.canMove(coords[0]+1, coords[1])){
+			walls++;
+		}
+		if(!map.canMove(coords[0], coords[1]-1)){
+			walls++;
+		}
+		if(!map.canMove(coords[0], coords[1]+1)){
+			walls++;
+		}
+		if(coords[0]==4 && coords[1]==4){
+			return walls;
+		}
+		if(walls>1)
+			return walls;
+		return walls;
+    }
+    
+    private boolean areNeighbours(Barrel barrel, Barrel barrel2){
+    	int[] coords = getMovablesMap().findBarrel(barrel);
+    	int[] coords2 = getMovablesMap().findBarrel(barrel2);
+		
+		if((Math.abs(coords[0] -coords2[0]) + Math.abs(coords[1] -coords2[1]))==1){
+			return true;
+		}
+		return false;
+			
+    }
     
     public int getNumber() {
         return number;
@@ -88,4 +152,6 @@ public class Level {
 	public Bulldozer getBulldozer(){
 		return movablesMap.getBulldozer();
 	}
+
+	
 }
