@@ -11,7 +11,7 @@ import java.util.Date;
 import org.junit.Test;
 
 import pl.edu.pw.elka.pszt.game.Move;
-import pl.edu.pw.elka.pszt.game.Round;
+import pl.edu.pw.elka.pszt.game.AStar;
 import pl.edu.pw.elka.pszt.models.Barrel;
 import pl.edu.pw.elka.pszt.models.BarrelSpotPair;
 import pl.edu.pw.elka.pszt.models.Bulldozer;
@@ -24,7 +24,7 @@ import pl.edu.pw.elka.pszt.utils.LevelFactory;
 public class MoveTest {
 
 	 Level level1;
-	Round round1;
+	AStar astar;
 	Move initMoveN, initMoveE, initMoveS, initMoveW;
 	ArrayList<Barrel> barrels;
 	ArrayList<Spot> spots;
@@ -36,7 +36,7 @@ public class MoveTest {
 		try {
 			
             level1 = LevelFactory.createFromProperties("level1");
-            round1 = new Round(level1);
+            astar = new AStar(level1);
             initMoves();
             //System.out.println(level1);
             movableMap= level1.getMovablesMap();
@@ -93,7 +93,7 @@ public class MoveTest {
 	
 	@Test
 	public void levelInitTest() {
-		//Level level1 = round1.getLevel();
+		//Level level1 = astar.getLevel();
 		assertEquals("class pl.edu.pw.elka.pszt.models.Floor", level1.getMap().getMapObjects()[2][2].getClass().toString());
 		assertEquals("class pl.edu.pw.elka.pszt.models.Wall", level1.getMap().getMapObjects()[1][1].getClass().toString());
 		assertEquals("class pl.edu.pw.elka.pszt.models.Spot", level1.getMap().getMapObjects()[2][3].getClass().toString());
@@ -104,8 +104,8 @@ public class MoveTest {
 	
 	@Test
 	public void moveTest() {
-		 Move current = round1.getMoveTree().getCurrentNode();
-		 round1.setBarrelSpotPairs(barrelSpotPairs);
+		 Move current = astar.getMoveTree().getCurrentNode();
+		 astar.setBarrelSpotPairs(barrelSpotPairs);
 		canMoveForwardTest();
 		canMoveLeftTest();
 		canMoveRightTest();
@@ -124,27 +124,27 @@ public class MoveTest {
 			barrelSpotPairs.add(pair);
 		}
 		
-		round1.setBarrelSpotPairs(barrelSpotPairs);
+		astar.setBarrelSpotPairs(barrelSpotPairs);
 		
 		// h - (h2 only) distance  barrel to spot
-		assertEquals(4, round1.h(barrelSpotPairs.get(0)) );
-		assertEquals(4, round1.h(barrelSpotPairs.get(1)));
-		assertEquals(4, round1.h(barrelSpotPairs.get(2)));
+		assertEquals(4, astar.h(barrelSpotPairs.get(0)) );
+		assertEquals(4, astar.h(barrelSpotPairs.get(1)));
+		assertEquals(4, astar.h(barrelSpotPairs.get(2)));
 		
 		/**
 		 *  h - (h2 +h1) distance  barrel to spot
-		assertEquals(10, round1.h(barrelSpotPairs.get(0)) );
-		assertEquals(10, round1.h(barrelSpotPairs.get(1)));
-		assertEquals(10, round1.h(barrelSpotPairs.get(2)));
+		assertEquals(10, astar.h(barrelSpotPairs.get(0)) );
+		assertEquals(10, astar.h(barrelSpotPairs.get(1)));
+		assertEquals(10, astar.h(barrelSpotPairs.get(2)));
 		
 		*/
-		round1.setInitialMove(initMoveN);
+		astar.setInitialMove(initMoveN);
 		// g - moves count
-		assertTrue(round1.g()==0);
+		assertTrue(astar.g()==0);
 		
 		Move nextMove =null;
 		for(int i=1 ;i<4; i++){
-			nextMove = round1.generateNewMovesPop();
+			nextMove = astar.generateNewMovesPop();
 			System.out.println("minmove # "+ i + " size=" +nextMove.getSize() + nextMove);
 			assertEquals(nextMove.getSize(), i);
 		}
@@ -188,26 +188,38 @@ public class MoveTest {
 	public void findMinMoveFromTreeTest(){
 		
 		System.out.println("\n findMinMoveFromTreeTest \n");
+	/*
+		//
+		BarrelSpotPair<Barrel, Spot> pair ;
+		barrelSpotPairs = new ArrayList<BarrelSpotPair<Barrel,Spot>>();
 	
+		pair = new BarrelSpotPair<Barrel, Spot>(barrels.get(0), spots.get(2));
+		barrelSpotPairs.add(pair);
+		pair = new BarrelSpotPair<Barrel, Spot>(barrels.get(1), spots.get(0));
+		barrelSpotPairs.add(pair);
+		pair = new BarrelSpotPair<Barrel, Spot>(barrels.get(2), spots.get(1));
+		barrelSpotPairs.add(pair);
+		*/
+		//
 		
 		ArrayList<BarrelSpotPair<Barrel, Spot>> barrelSpotPairsT = barrelSpotPairs;
 		//Collections.reverse(barrelSpotPairsT);
-		round1.setBarrelSpotPairs(barrelSpotPairsT);
-		round1.setInitialMove(initMoveE);
+		astar.setBarrelSpotPairs(barrelSpotPairsT);
+		astar.setInitialMove(initMoveN);
 		int h2 =0;
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
 		Date startdate = new Date();
 		
 		
-		Move minMove = round1.generateNewMovesPop();
-		for(int i=2 ;i<40; i++){
-			minMove = round1.generateNewMovesPop();
+		Move minMove = astar.generateNewMovesPop();
+		for(int i=2 ;i<50; i++){
+			minMove = astar.generateNewMovesPop();
 			System.out.println("minmove # "+ i + " f=" +minMove.getF() + "  move: "+  minMove);
-			round1.moveFromRoot(minMove);
-			System.out.println(round1.getLevel().getMovablesMap());
-			h2 =  round1.h2();
-			System.out.println("FMIN =" + minMove.getF() + "=" + round1.g() + " + " + round1.h2() );
-			round1.goBackToRoot(minMove);
+			astar.moveFromRoot(minMove);
+			System.out.println(astar.getLevel().getMovablesMap());
+			h2 =  astar.h2();
+			System.out.println("FMIN =" + minMove.getF() + "=" + astar.g() + " + " + astar.h2() );
+			astar.goBackToRoot(minMove);
 			if(h2==0){
 				assertTrue(true);
 				System.out.println("route found");
@@ -219,13 +231,6 @@ public class MoveTest {
 		
 		System.out.println("end   time" + dateFormat.format(enddate) );
 		
-		//round1.moveFromRootWitDisp(minMove);
-		
-		//assertTrue(round1.isBarrelAtSpot(round1.getBarrelSpotPairs().get(0)));
-		//assertEquals(minMove.getSize(), 6);
-		//round1.goBackToRoot(minMove);
-		 
-		 
 	}
 	
 	
@@ -236,20 +241,20 @@ public class MoveTest {
 	@Test
 	public void minMoveTest(){
 		
-		//round1.setInitialMove(initMoveN);
-		//round1.setBarrelSpotPairs(barrelSpotPairs);
-		//round1.setInitialMove(initMoveW);
-		//round1.setBarrelSpotPairs(barrelSpotPairs);
+		//astar.setInitialMove(initMoveN);
+		//astar.setBarrelSpotPairs(barrelSpotPairs);
+		//astar.setInitialMove(initMoveW);
+		//astar.setBarrelSpotPairs(barrelSpotPairs);
 		System.out.println("\n minMoveTest \n");
 		
 		ArrayList<BarrelSpotPair<Barrel, Spot>> barrelSpotPairsT = barrelSpotPairs;
 		Collections.reverse(barrelSpotPairsT);
-		round1.setBarrelSpotPairs(barrelSpotPairsT);
-		round1.setInitialMove(initMoveN);
+		astar.setBarrelSpotPairs(barrelSpotPairsT);
+		astar.setInitialMove(initMoveN);
 		
-		// System.out.println(round1.getLevel().getMovablesMap().toString());
+		// System.out.println(astar.getLevel().getMovablesMap().toString());
 		
-		//round1.start(barrelSpotPairs, initMoveN);
+		//astar.start(barrelSpotPairs, initMoveN);
 	}
 	
 	
@@ -259,70 +264,70 @@ public class MoveTest {
 		/* DD rezygnyje nie daje dobrych wyników
 		System.out.println("\n barrelAtCornerTest \n");
 		
-		round1.setBarrelSpotPairs(barrelSpotPairs);
-		assertFalse(round1.barrelAtCorner());
+		astar.setBarrelSpotPairs(barrelSpotPairs);
+		assertFalse(astar.barrelAtCorner());
 		//System.out.println("\n moveBulldozerTest \n");
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				
 				Move nextMove = initMoveS.calcNextMove('F');
-				//round1.checkMoves();
-				round1.getLevel().move(nextMove);
+				//astar.checkMoves();
+				astar.getLevel().move(nextMove);
 				nextMove = nextMove.calcNextMove('R');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 
 				nextMove = nextMove.calcNextMove('R');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				nextMove = nextMove.calcNextMove('L');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				nextMove = nextMove.calcNextMove('F');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				nextMove = nextMove.calcNextMove('L');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 
 				nextMove = nextMove.calcNextMove('L');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				nextMove = nextMove.calcNextMove('F');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				nextMove = nextMove.calcNextMove('L');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				
 			
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				nextMove = nextMove.calcNextMove('R');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				nextMove = nextMove.calcNextMove('L');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				
 				
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				nextMove = nextMove.calcNextMove('F');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				nextMove = nextMove.calcNextMove('L');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				
 				nextMove = nextMove.calcNextMove('L');
-				round1.getLevel().move(nextMove);
-				System.out.println(round1.getLevel().getMovablesMap().toString());
+				astar.getLevel().move(nextMove);
+				System.out.println(astar.getLevel().getMovablesMap().toString());
 				nextMove = nextMove.calcNextMove('F');
-				round1.getLevel().move(nextMove);
+				astar.getLevel().move(nextMove);
 				
 				
 				
-		 System.out.println(round1.getLevel().getMovablesMap().toString());
+		 System.out.println(astar.getLevel().getMovablesMap().toString());
 		
-		 assertTrue(round1.barrelAtCorner());
+		 assertTrue(astar.barrelAtCorner());
 		*/
 		
 	}
@@ -332,42 +337,42 @@ public class MoveTest {
 	private void canMoveForwardTest(){
 		System.out.println("\n canMoveForwardTest \n");
 		
-		round1.setInitialMove(initMoveN);
-		Move current = round1.getMoveTree().getCurrentNode();
-		assertTrue(round1.checkMove(current, 'F'));
+		astar.setInitialMove(initMoveN);
+		Move current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current, 'F'));
 		
-		round1.setInitialMove(initMoveE);
-		current = round1.getMoveTree().getCurrentNode();
-		assertFalse(round1.checkMove(current,'F'));
+		astar.setInitialMove(initMoveE);
+		current = astar.getMoveTree().getCurrentNode();
+		assertFalse(astar.checkMove(current,'F'));
 		
-		round1.setInitialMove(initMoveS);
-		current = round1.getMoveTree().getCurrentNode();
-		assertTrue(round1.checkMove(current,'F'));
+		astar.setInitialMove(initMoveS);
+		current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'F'));
 		
-		round1.setInitialMove(initMoveW);
-		current = round1.getMoveTree().getCurrentNode();
-		assertTrue(round1.checkMove(current,'F'));
+		astar.setInitialMove(initMoveW);
+		current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'F'));
 		
 	}	
 	
 	private void canMoveLeftTest(){
 		System.out.println("\n canMoveLeftTest \n");
 		
-		round1.setInitialMove(initMoveN);
-		Move current = round1.getMoveTree().getCurrentNode();
-		assertTrue(round1.checkMove(current,'L'));
+		astar.setInitialMove(initMoveN);
+		Move current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'L'));
 		
-		round1.setInitialMove(initMoveE);
-		current = round1.getMoveTree().getCurrentNode();
-		assertTrue(round1.checkMove(current,'L'));
+		astar.setInitialMove(initMoveE);
+		current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'L'));
 		
-		round1.setInitialMove(initMoveS);
-		current = round1.getMoveTree().getCurrentNode();
-		assertFalse(round1.checkMove(current,'L'));
+		astar.setInitialMove(initMoveS);
+		current = astar.getMoveTree().getCurrentNode();
+		assertFalse(astar.checkMove(current,'L'));
 		
-		round1.setInitialMove(initMoveW);
-		current = round1.getMoveTree().getCurrentNode();
-		assertTrue(round1.checkMove(current,'L'));
+		astar.setInitialMove(initMoveW);
+		current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'L'));
 		
 		
 	}
@@ -375,57 +380,57 @@ public class MoveTest {
 	private void canMoveRightTest(){
 		System.out.println("\n canMoveRightTest \n");
 		
-		round1.setInitialMove(initMoveN);
-		Move current = round1.getMoveTree().getCurrentNode();
-		assertFalse(round1.checkMove(current,'R'));
+		astar.setInitialMove(initMoveN);
+		Move current = astar.getMoveTree().getCurrentNode();
+		assertFalse(astar.checkMove(current,'R'));
 		
-		round1.setInitialMove(initMoveE);
-		current = round1.getMoveTree().getCurrentNode();
-		assertTrue(round1.checkMove(current,'R'));
+		astar.setInitialMove(initMoveE);
+		current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'R'));
 		
-		round1.setInitialMove(initMoveS);
-		current = round1.getMoveTree().getCurrentNode();
-		assertTrue(round1.checkMove(current,'R'));
+		astar.setInitialMove(initMoveS);
+		current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'R'));
 		
-		round1.setInitialMove(initMoveW);
-		current = round1.getMoveTree().getCurrentNode();
-		assertTrue(round1.checkMove(current,'R'));
+		astar.setInitialMove(initMoveW);
+		current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'R'));
 		
 	}
 	
-	private Round moveBulldozerTest(){
+	private AStar moveBulldozerTest(){
 		
 		//System.out.println("\n moveBulldozerTest \n");
-		System.out.println(round1.getLevel().getMovablesMap().toString());
+		System.out.println(astar.getLevel().getMovablesMap().toString());
 		
 		Move nextMove = initMoveN.calcNextMove('F');
-		//round1.checkMoves();
-		round1.getLevel().move(nextMove);
-		int [] bulldozerCoord = round1.getLevel().getMovablesMap().findBulldozer();
+		//astar.checkMoves();
+		astar.getLevel().move(nextMove);
+		int [] bulldozerCoord = astar.getLevel().getMovablesMap().findBulldozer();
 		
 		
 		assertTrue(bulldozerCoord[0]==nextMove.getXo());
 		assertTrue(bulldozerCoord[1]==nextMove.getYo());
 		nextMove = nextMove.calcNextMove('L');
-		//round1.checkMoves();
-		round1.getLevel().move(nextMove);
+		//astar.checkMoves();
+		astar.getLevel().move(nextMove);
 		//
-		System.out.println(round1.getLevel().getMovablesMap().toString());
+		System.out.println(astar.getLevel().getMovablesMap().toString());
 		//
-		bulldozerCoord = round1.getLevel().getMovablesMap().findBulldozer();
+		bulldozerCoord = astar.getLevel().getMovablesMap().findBulldozer();
 		assertTrue(bulldozerCoord[0]==nextMove.getXo());
 		assertTrue(bulldozerCoord[1]==nextMove.getYo());
 		
 		nextMove = nextMove.calcNextMove('F');
-		//round1.checkMoves();
-		round1.getLevel().move(nextMove);
-		bulldozerCoord = round1.getLevel().getMovablesMap().findBulldozer();
+		//astar.checkMoves();
+		astar.getLevel().move(nextMove);
+		bulldozerCoord = astar.getLevel().getMovablesMap().findBulldozer();
 		assertTrue(bulldozerCoord[0]==nextMove.getXo());
 		assertTrue(bulldozerCoord[1]==nextMove.getYo());
-		assertTrue(round1.getLevel().getMovablesMap().getMovables()[1][2].getClass()==Barrel.class);
+		assertTrue(astar.getLevel().getMovablesMap().getMovables()[1][2].getClass()==Barrel.class);
 		
-		System.out.println(round1.getLevel().getMovablesMap().toString());
-		return round1;
+		System.out.println(astar.getLevel().getMovablesMap().toString());
+		return astar;
 		
 	}
 	

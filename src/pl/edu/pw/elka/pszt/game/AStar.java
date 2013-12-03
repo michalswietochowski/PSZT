@@ -12,7 +12,7 @@ import pl.edu.pw.elka.pszt.models.Bulldozer;
 import pl.edu.pw.elka.pszt.models.Level;
 import pl.edu.pw.elka.pszt.models.Spot;
 
-public class Round {
+public class AStar {
 
 	private Level level;
 	private MoveTree moveTree;
@@ -21,15 +21,15 @@ public class Round {
 	private BarrelSpotPair<Barrel, Spot> executingPair;
 
 	private int discardedMoves=0;
-	private int discardedMovesbarrels=0;
+	private int discardedMovesParent=0;
 	
-	public Round(Level level, Move initialMove){
+	public AStar(Level level, Move initialMove){
 		this.level = level;		
 		moveTree = new MoveTree();
 		moveTree.setRoot(initialMove);
 	}
 	
-	public Round(Level level){
+	public AStar(Level level){
 		this.level = level;
 		moveTree = new MoveTree();
 	}
@@ -175,6 +175,21 @@ public class Round {
 
 	*/
 		
+		if(move.getSize()>16){
+			Move parent = move.getParent();
+			int count =0;
+			for(int i =0;i<11;i++){
+				if(!parent.isMovedBarrel()){
+					count++;
+				}
+				parent =parent.getParent();
+			}
+			if(count>10){
+				move.setDeadEnd(true);
+				discardedMoves++;
+			}
+		}
+		
 		
 	}
 	
@@ -223,7 +238,7 @@ public class Round {
 			
 		}
 		System.out.println("Discarder moves  " + discardedMoves);
-		System.out.println("Discarder barres " + discardedMovesbarrels);
+		System.out.println("Discarder barres " + discardedMovesParent);
 		moveTree.setYoungest(youngest);
 		
 		return findMinMoveFrom(youngest);
@@ -403,7 +418,7 @@ public class Round {
 				return false;
 			}
 			if(level.barellAtCorner(pair.getLeft())){
-				discardedMovesbarrels++;
+				discardedMovesParent++;
 				return true;
 			}
 		}
