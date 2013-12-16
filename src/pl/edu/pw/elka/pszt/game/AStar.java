@@ -7,13 +7,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import javafx.concurrent.Task;
 import pl.edu.pw.elka.pszt.models.Barrel;
 import pl.edu.pw.elka.pszt.models.BarrelSpotPair;
 import pl.edu.pw.elka.pszt.models.Bulldozer;
 import pl.edu.pw.elka.pszt.models.Level;
 import pl.edu.pw.elka.pszt.models.Spot;
 
-public class AStar extends Observable implements Runnable{
+public class AStar extends Task {
 
 	private Level level;
 	private MoveTree moveTree;
@@ -26,9 +27,9 @@ public class AStar extends Observable implements Runnable{
 	private int maxNumberOfSteps=50;
 	
 	private Date startDate, endDate;
-	private static DateFormat DATEFORMAT =  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");;
-	
-	private Observer observer;
+	private static DateFormat DATEFORMAT =  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
+
+    private String threadId;
 	
 	public AStar(Level level, Move initialMove){
 		this.level = level;		
@@ -51,7 +52,7 @@ public class AStar extends Observable implements Runnable{
 		for(int i=2 ;i<maxNumberOfSteps; i++){
 			minMove = generateNewMovesPop();
 			moveFromRoot(minMove);
-            update(getLevel().getMovablesMap());
+            update(getLevel().getMovablesMap().toString());
 			
 			if(getNumberOfBarrelsAtSpot()==barrelSpotPairs.size()){
                 update("route found");
@@ -62,7 +63,7 @@ public class AStar extends Observable implements Runnable{
 			goBackToRoot(minMove);
 			
 		}
-        update(getLevel().getMovablesMap());
+        update(getLevel().getMovablesMap().toString());
         update("start time" + DATEFORMAT.format(startdate));
 	}
 	
@@ -222,7 +223,7 @@ public class AStar extends Observable implements Runnable{
 		ArrayList<Move> parents = moveTree.getYoungest(); //findYoungest();
 		
 		int size = parents.size();
-		update("size beore"  + size);
+		update("size beore" + size);
 		int i=0;
 		for (Iterator<Move> iterator = parents.iterator(); iterator.hasNext(); ) {
 		    Move move = iterator.next();
@@ -369,7 +370,7 @@ public class AStar extends Observable implements Runnable{
 		for (Move move2 : moves) {
 			level.move(move2);
 			update("moves from root ");
-			update(level.getMovablesMap());
+			update(level.getMovablesMap().toString());
 			
 		}
 	}
@@ -397,7 +398,7 @@ public class AStar extends Observable implements Runnable{
 			int[] barrel = level.getMovablesMap().findBarrel(pair.getLeft());
 			int[] bulldozer = level.getMovablesMap().findBulldozer();
 			if(barrel==null){
-				update( "bef " + level.getMovablesMap());
+				update("bef " + level.getMovablesMap());
 			}
 			h1 += Math.abs(barrel[0] -bulldozer[0]) + Math.abs(barrel[1] -bulldozer[1]);
 		}
@@ -488,20 +489,27 @@ public class AStar extends Observable implements Runnable{
 		return endDate;
 	}
 
-    public void setObserver(Observer observer) {
-        this.observer = observer;
+    public void setThreadId(String threadId) {
+        this.threadId = threadId;
     }
 
     /**
      * Shorthand notification method
-     * @param arg argument to send to observer or console
+     * @param message argument to send to observer or console
      */
-    private void update(Object arg)
+    private void update(String message)
     {
-        if (observer != null) {
-            observer.update(this, arg);
+        if (threadId != null) {
+            message = String.format("[%s][Thread %s] %s", DATEFORMAT.format(new Date()), threadId, message);
+            updateMessage(message);
         } else {
-            System.out.println(arg);
+            System.out.println(message);
         }
+    }
+
+    @Override
+    protected Object call() throws Exception {
+        run();
+        return this;
     }
 }

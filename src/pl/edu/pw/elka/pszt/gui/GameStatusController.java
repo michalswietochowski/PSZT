@@ -1,15 +1,20 @@
 package pl.edu.pw.elka.pszt.gui;
 
-import javafx.concurrent.Task;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import pl.edu.pw.elka.pszt.models.Level;
-import pl.edu.pw.elka.pszt.models.Map;
-import pl.edu.pw.elka.pszt.models.MovablesMap;
+import pl.edu.pw.elka.pszt.game.AStar;
+import pl.edu.pw.elka.pszt.game.Move;
+import pl.edu.pw.elka.pszt.models.*;
 import pl.edu.pw.elka.pszt.utils.LevelFactory;
+
+import java.util.ArrayList;
 
 /**
  * PSZT
@@ -19,34 +24,28 @@ public class GameStatusController {
 
     private static final int LEVELS_NUM = 5;
     private static final int TILE_SIZE = 64;
+    private final ObservableList<AStar> threadList = FXCollections.observableArrayList();
     public ComboBox levelComboBox;
     public GridPane levelGridPane;
     public Button solveButton;
     public TableView statsTableView;
     public ListView statusListView;
     public ProgressBar statusProgressBar;
-    protected Level[] levels;
-
-    public GameStatusController() {
-        this.levels = new Level[LEVELS_NUM];
-        for (int i = 0; i < LEVELS_NUM; i++) {
-            try {
-                this.levels[i] = LevelFactory.createFromProperties("level" + (i + 1));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
+    public CheckBox initMoveNCheckbox, initMoveSCheckbox, initMoveECheckbox, initMoveWCheckbox;
 
     public void initialize() {
-        for (int i = 0; i < LEVELS_NUM; i++) {
-            levelComboBox.getItems().add(this.levels[i]);
+        for (int i = 1; i <= LEVELS_NUM; i++) {
+            levelComboBox.getItems().add("Level " + i);
         }
     }
 
     public void onLevelChange(ActionEvent actionEvent) {
         levelGridPane.getChildren().clear();
-        drawLevel((Level) levelComboBox.getValue());
+        try {
+            drawLevel(LevelFactory.createFromProperties("level" + (levelComboBox.getSelectionModel().getSelectedIndex() + 1)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         solveButton.setDisable(false);
     }
 
@@ -71,30 +70,78 @@ public class GameStatusController {
     }
 
     public void onSolveClick(ActionEvent actionEvent) {
-        //todo: implement
-        this.statsTableView.setDisable(false);
-        this.statusListView.getItems().add("Algorithm threads status messages go here...");
-        this.statusListView.setDisable(false);
-        this.statusProgressBar.setVisible(true);
+        statsTableView.setDisable(false);
+        statusListView.setDisable(false);
+        statusProgressBar.setVisible(true);
+        statusListView.getItems().clear();
+        threadList.clear();
 
-        Task<Void> task = new Task<Void>() {
-            @Override public Void call() {
-                for (int i = 1; i <= 100; i++) {
-                    try {
-                        Thread.sleep(20);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    updateProgress(i, 100);
-                }
-                return null;
+        startSolving(levelComboBox.getSelectionModel().getSelectedIndex() + 1);
+    }
+
+    protected void startSolving(int levelNum) {
+        if (initMoveNCheckbox.isSelected()) {
+            solve(levelNum, "N");
+        }
+        if (initMoveSCheckbox.isSelected()) {
+            solve(levelNum, "S");
+        }
+        if (initMoveWCheckbox.isSelected()) {
+            solve(levelNum, "W");
+        }
+        if (initMoveECheckbox.isSelected()) {
+            solve(levelNum, "E");
+        }
+    }
+
+    protected ArrayList<BarrelSpotPair<Barrel, Spot>> getBarrelSpotPair(Level level) {
+        ArrayList<Barrel> barrels = level.getMovablesMap().getBarrels();
+        ArrayList<Spot> spots = level.getMap().getSpots();
+        ArrayList<BarrelSpotPair<Barrel, Spot>> barrelSpotPairs = new ArrayList<BarrelSpotPair<Barrel, Spot>>();
+        BarrelSpotPair<Barrel, Spot> pair;
+        int barrelsSize = barrels.size();
+
+        for (int i = 0; i < barrelsSize; i++) {
+            pair = new BarrelSpotPair<Barrel, Spot>(barrels.get(i), spots.get(i));
+            barrelSpotPairs.add(pair);
+        }
+        return barrelSpotPairs;
+    }
+
+    protected void solve(int levelNum, String move) {
+        try {
+            Level level = LevelFactory.createFromProperties("level" + levelNum);
+            int[] bc = level.getMovablesMap().findBulldozer();
+            Move initialMove = null;
+
+            if (move.equals("N")) {
+                initialMove = new Move(bc[0], bc[1] + 1, bc[0], bc[1]);
+            } else if (move.equals("S")) {
+                initialMove = new Move(bc[0], bc[1] - 1, bc[0], bc[1]);
+            } else if (move.equals("W")) {
+                initialMove = new Move(bc[0] + 1, bc[1], bc[0], bc[1]);
+            } else if (move.equals("E")) {
+                initialMove = new Move(bc[0] - 1, bc[1], bc[0], bc[1]);
             }
-        };
 
-        this.statusProgressBar.progressProperty().bind(task.progressProperty());
+            AStar astar = new AStar(level);
+            astar.setBarrelSpotPairs(getBarrelSpotPair(level));
+            astar.setInitialMove(initialMove);
+            astar.setThreadId(move);
+            astar.messageProperty().addListener(new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observableValue, String s, String s2) {
+                    update(observableValue.getValue());
+                }
+            });
+            new Thread(astar).start();
+            threadList.add(astar);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
+    public void update(String s) {
+        statusListView.getItems().add(0, s);
     }
 }
