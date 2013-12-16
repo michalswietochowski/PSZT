@@ -44,17 +44,17 @@ public class AStar extends Observable implements Runnable{
 
 	@Override
 	public void run(){
-		
+		update("A* thread started");
 		Date startdate = new Date();
 		Move minMove = generateNewMovesPop();
 		
 		for(int i=2 ;i<maxNumberOfSteps; i++){
 			minMove = generateNewMovesPop();
 			moveFromRoot(minMove);
-			System.out.println(getLevel().getMovablesMap());
+            update(getLevel().getMovablesMap());
 			
 			if(getNumberOfBarrelsAtSpot()==barrelSpotPairs.size()){
-				System.out.println("route found");
+                update("route found");
 				endDate  = new Date();
 				lastMove=minMove;
 				break;
@@ -62,8 +62,8 @@ public class AStar extends Observable implements Runnable{
 			goBackToRoot(minMove);
 			
 		}
-		System.out.println(getLevel().getMovablesMap());
-		System.out.println("start time" + DATEFORMAT.format(startdate));
+        update(getLevel().getMovablesMap());
+        update("start time" + DATEFORMAT.format(startdate));
 	}
 	
 	
@@ -205,7 +205,7 @@ public class AStar extends Observable implements Runnable{
 		}
 		boolean canMove = level.canMove(nextMove);
 		/*if(nextMove.areAllChildrenDeadEnd()){
-			System.out.println("znalazlem martwe dziecko");
+			update("znalazlem martwe dziecko");
 			return false;
 			nigdy nie znajduje
 		}*/
@@ -222,7 +222,7 @@ public class AStar extends Observable implements Runnable{
 		ArrayList<Move> parents = moveTree.getYoungest(); //findYoungest();
 		
 		int size = parents.size();
-		System.out.println("size beore"  + size);
+		update("size beore"  + size);
 		int i=0;
 		for (Iterator<Move> iterator = parents.iterator(); iterator.hasNext(); ) {
 		    Move move = iterator.next();
@@ -232,13 +232,13 @@ public class AStar extends Observable implements Runnable{
 		    	iterator.remove();
 		    }
 		}
-		System.out.println("usunalem " + i);
+		update("usunalem " + i);
 		ArrayList<Move> youngest = new ArrayList<Move>();
 		for (Move parent : parents) {
 			youngest.addAll(parent.getChildren());
 			
 		}
-		System.out.println("Discarder moves  " + discardedMoves);
+		update("Discarder moves  " + discardedMoves);
 		moveTree.setYoungest(youngest);
 		
 		return findMinMoveFrom(youngest);
@@ -368,8 +368,8 @@ public class AStar extends Observable implements Runnable{
 		Collections.reverse(moves);
 		for (Move move2 : moves) {
 			level.move(move2);
-			System.out.println("moves from root ");
-			System.out.println(level.getMovablesMap());
+			update("moves from root ");
+			update(level.getMovablesMap());
 			
 		}
 	}
@@ -397,7 +397,7 @@ public class AStar extends Observable implements Runnable{
 			int[] barrel = level.getMovablesMap().findBarrel(pair.getLeft());
 			int[] bulldozer = level.getMovablesMap().findBulldozer();
 			if(barrel==null){
-				System.out.println( "bef " + level.getMovablesMap());
+				update( "bef " + level.getMovablesMap());
 			}
 			h1 += Math.abs(barrel[0] -bulldozer[0]) + Math.abs(barrel[1] -bulldozer[1]);
 		}
@@ -490,5 +490,18 @@ public class AStar extends Observable implements Runnable{
 
     public void setObserver(Observer observer) {
         this.observer = observer;
+    }
+
+    /**
+     * Shorthand notification method
+     * @param arg argument to send to observer or console
+     */
+    private void update(Object arg)
+    {
+        if (observer != null) {
+            observer.update(this, arg);
+        } else {
+            System.out.println(arg);
+        }
     }
 }
