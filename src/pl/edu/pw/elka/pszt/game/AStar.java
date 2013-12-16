@@ -5,11 +5,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 
 import pl.edu.pw.elka.pszt.models.Barrel;
 import pl.edu.pw.elka.pszt.models.BarrelSpotPair;
@@ -17,7 +13,7 @@ import pl.edu.pw.elka.pszt.models.Bulldozer;
 import pl.edu.pw.elka.pszt.models.Level;
 import pl.edu.pw.elka.pszt.models.Spot;
 
-public class AStar implements Runnable{
+public class AStar extends Observable implements Runnable{
 
 	private Level level;
 	private MoveTree moveTree;
@@ -32,7 +28,7 @@ public class AStar implements Runnable{
 	private Date startDate, endDate;
 	private static DateFormat DATEFORMAT =  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");;
 	
-	
+	private Observer observer;
 	
 	public AStar(Level level, Move initialMove){
 		this.level = level;		
@@ -209,7 +205,7 @@ public class AStar implements Runnable{
 		}
 		boolean canMove = level.canMove(nextMove);
 		/*if(nextMove.areAllChildrenDeadEnd()){
-			System.out.println("znalaz³em martwe dziecko");
+			System.out.println("znalazlem martwe dziecko");
 			return false;
 			nigdy nie znajduje
 		}*/
@@ -236,7 +232,7 @@ public class AStar implements Runnable{
 		    	iterator.remove();
 		    }
 		}
-		System.out.println("usun¹³em " + i);
+		System.out.println("usunalem " + i);
 		ArrayList<Move> youngest = new ArrayList<Move>();
 		for (Move parent : parents) {
 			youngest.addAll(parent.getChildren());
@@ -492,5 +488,7 @@ public class AStar implements Runnable{
 		return endDate;
 	}
 
-	
+    public void setObserver(Observer observer) {
+        this.observer = observer;
+    }
 }
