@@ -14,8 +14,10 @@ import java.util.Iterator;
 import pl.edu.pw.elka.pszt.models.Barrel;
 import pl.edu.pw.elka.pszt.models.BarrelSpotPair;
 import pl.edu.pw.elka.pszt.models.Bulldozer;
+import pl.edu.pw.elka.pszt.models.Floor;
 import pl.edu.pw.elka.pszt.models.Level;
 import pl.edu.pw.elka.pszt.models.Spot;
+import sun.org.mozilla.javascript.internal.ast.ArrayLiteral;
 
 public class AStar implements Runnable{
 
@@ -27,7 +29,10 @@ public class AStar implements Runnable{
 	private BarrelSpotPair<Barrel, Spot> executingPair;
 
 	private int discardedMoves=0;
+	private int discardedMovesB=0;
 	private int maxNumberOfSteps=50;
+	private int loopRemoval = 5;
+	private int stepsPerBatSRate =8;
 	
 	private Date startDate, endDate;
 	private static DateFormat DATEFORMAT =  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");;
@@ -44,6 +49,28 @@ public class AStar implements Runnable{
 	public AStar(Level level){
 		this.level = level;
 		moveTree = new MoveTree();
+		
+		//
+		
+        ArrayList<Barrel> barrels = level.getMovablesMap().getBarrels();
+        ArrayList<Spot> spots = level.getMap().getSpots();
+    	
+    	BarrelSpotPair<Barrel, Spot> pair ;
+		barrelSpotPairs = new ArrayList<BarrelSpotPair<Barrel,Spot>>();
+		for (int i =0; i<barrels.size();i++) {
+			pair = new BarrelSpotPair<Barrel, Spot>(barrels.get(i), spots.get(i));
+			barrelSpotPairs.add(pair);
+		}
+		int [] bulldozerCoord = level.getMovablesMap().findBulldozer();
+		Move root = new Move(
+				bulldozerCoord[0]-1,
+				bulldozerCoord[1],
+				bulldozerCoord[0],
+				bulldozerCoord[1]
+				);
+		
+		moveTree.setRoot(root);
+		//
 	}
 
 	@Override
@@ -56,7 +83,7 @@ public class AStar implements Runnable{
 			minMove = generateNewMovesPop();
 			moveFromRoot(minMove);
 			System.out.println(getLevel().getMovablesMap());
-			
+			System.out.println("barrels at spots: " + getNumberOfBarrelsAtSpot());
 			if(getNumberOfBarrelsAtSpot()==barrelSpotPairs.size()){
 				System.out.println("route found");
 				endDate  = new Date();
@@ -64,7 +91,6 @@ public class AStar implements Runnable{
 				break;
 			}
 			goBackToRoot(minMove);
-			
 		}
 		System.out.println(getLevel().getMovablesMap());
 		System.out.println("start time" + DATEFORMAT.format(startdate));
@@ -81,7 +107,7 @@ public class AStar implements Runnable{
 			Move child = move.calcNextMove('F');
 			child.setParent(move);
 			moveFromRoot(child);
-			child.setF(g() + h2());
+			child.setF(hh());
 			children.add(child);
 			goBackToRoot(child);
 		}
@@ -89,7 +115,7 @@ public class AStar implements Runnable{
 			Move child = move.calcNextMove('L');
 			child.setParent(move);
 			moveFromRoot(child);
-			child.setF(g() + h2());
+			child.setF(hh());
 			children.add(child);
 			goBackToRoot(child);
 			
@@ -98,104 +124,82 @@ public class AStar implements Runnable{
 			Move child = move.calcNextMove('R');
 			child.setParent(move);
 			moveFromRoot(child);
-			child.setF(g() + h2());
+			child.setF(hh());
 			children.add(child);
 			goBackToRoot(child);
 		}
+		if(move.isMovedBarrel() 
+				&& checkMove(move, 'B')) {
+			Move child = move.calcNextMove('B');
+			
+			child.setParent(move);
+			moveFromRoot(child);
+			child.setF(hh());
+			children.add(child);
+			goBackToRoot(child);
+		}
+		
 		move.setChildren(children);
 		if(children.size()==0 || move.areAllChildrenDeadEnd()){
 			move.setDeadEnd(true);
+			moveTree.addDeadEnd(move);
 			discardedMoves++;
-		}else if(move.getSize()>6){
-			if(move.equals(move.getParent().getParent().getParent().getParent()) && !move.isMovedBarrel()){
-				move.setDeadEnd(true);
-				discardedMoves++;
-			}
+			return;
 		}
 		
-		if(move.getSize()>8){
-			if(!move.isMovedBarrel() && 
-					move.equals(move.getParent().getParent().getParent().getParent().
-					getParent().getParent())){
-				move.setDeadEnd(true);
-				discardedMoves++;
-			}
-		}
-		/*
-		if(barrelAtCorner()){
-			move.setDeadEnd(true);
-			discardedMovesbarrels++;
-		}*/
-		
-		if(move.getSize()>10){
-			if(!move.isMovedBarrel() && 
-					move.equals(move.getParent().getParent().getParent().getParent().
-					getParent().getParent().getParent().getParent())){
-				move.setDeadEnd(true);
-				discardedMoves++;
-			}
-		}
-
-		if(move.getSize()>12){
-			if(!move.isMovedBarrel() && 
-					move.equals(move.getParent().getParent().getParent().getParent()
-					.getParent().getParent().getParent().getParent()
-					.getParent().getParent())){
-				move.setDeadEnd(true);
-				discardedMoves++;
-			}
-		}
-
-		if(move.getSize()>14){
-			if(!move.isMovedBarrel() && 
-					move.equals(move.getParent().getParent().getParent().getParent().
-					getParent().getParent().getParent().getParent().
-					getParent().getParent().getParent().getParent())){
-				move.setDeadEnd(true);
-				discardedMoves++;
-			}
-		}
-		
-		if(move.getSize()>16){
-			if(!move.isMovedBarrel() && 
-					move.equals(move.getParent().getParent().getParent().getParent().
-					getParent().getParent().getParent().getParent().
-					getParent().getParent().getParent().getParent()
-					.getParent().getParent())){
-				move.setDeadEnd(true);
-				discardedMoves++;
-			}
-		}
-		/*
-		if(move.getSize()>16){
-			if(!move.isMovedBarrel() && 
-					move.equals(move.getParent().getParent().getParent().getParent().
-					getParent().getParent().getParent().getParent().
-					getParent().getParent().getParent().getParent()
-					.getParent().getParent().getParent().getParent())){
-				move.setDeadEnd(true);
-				discardedMoves++;
-			}
-		}
-
-	*/
-		
-		if(move.getSize()>16){
-			Move parent = move.getParent();
-			int count =0;
-			for(int i =0;i<11;i++){
-				if(!parent.isMovedBarrel()){
+				Move iterMove = move;
+				boolean moved = false;
+				boolean eq = false;
+				int count =0;
+				while(iterMove.getParent()!=moveTree.getRoot() &&  iterMove.getParent()!=null){
+					iterMove =iterMove.getParent();
+					if(iterMove.isMovedBarrel()){
+						moved =true;
+						break;
+					}
+					if(iterMove.equals(move)){
+						eq= true;
+						break;
+					}
 					count++;
+					if(count>loopRemoval){
+						eq= true;
+						break;
+					}
+					
 				}
-				parent =parent.getParent();
-			}
-			if(count>10){
+				if(!moved && 
+						eq){
+					move.setDeadEnd(true);
+					moveTree.addDeadEnd(move);
+					discardedMoves++;
+					return;
+				}
+				
+				for (Move deadEnd : moveTree.getDeadEnds()) {
+					if(move.equals(deadEnd)){
+						eq=true;
+						discardedMovesB++;
+						break;
+					}
+				}
+		
+			if(move.getSize() > stepsPerBatSRate){
+			int expectedBatS = (int)(move.getSize()/stepsPerBatSRate);
+			moveFromRoot(move);
+			
+			if(
+					getNumberOfBarrelsAtSpot()>(expectedBatS-1) &&
+					 getNumberOfBarrelsAtSpot()<=(expectedBatS+1)
+			){}else {
 				move.setDeadEnd(true);
+				moveTree.addDeadEnd(move);
 				discardedMoves++;
+				goBackToRoot(move);
+				return;
 			}
+			goBackToRoot(move);
 		}
-		
-		
 	}
 	
 	public boolean checkMove(Move move, char to){
@@ -205,7 +209,7 @@ public class AStar implements Runnable{
 			//!!!
 			moveFromRoot(move);
 			moveTree.setCurrentNode(move);
-			move.setF(g() + h(executingPair));
+			move.setF(hh());
 		}
 		boolean canMove = level.canMove(nextMove);
 		/*if(nextMove.areAllChildrenDeadEnd()){
@@ -227,6 +231,8 @@ public class AStar implements Runnable{
 		
 		int size = parents.size();
 		System.out.println("size beore"  + size);
+		System.out.println("move "  + parents.get(0).getSize());
+		
 		int i=0;
 		for (Iterator<Move> iterator = parents.iterator(); iterator.hasNext(); ) {
 		    Move move = iterator.next();
@@ -243,6 +249,7 @@ public class AStar implements Runnable{
 			
 		}
 		System.out.println("Discarder moves  " + discardedMoves);
+		System.out.println("Discarder movesB  " + discardedMovesB);
 		moveTree.setYoungest(youngest);
 		
 		return findMinMoveFrom(youngest);
@@ -340,13 +347,37 @@ public class AStar implements Runnable{
 	}
 	
 	public int getNumberOfBarrelsAtSpot(){
-		int count =0;
+		/*int count =0;
 		for (BarrelSpotPair<Barrel, Spot> pair : barrelSpotPairs) {
+			int[] barrel = level.getMovablesMap().findBarrel(pair.getLeft());
+			int[] spot = level.getMap().findSpot(pair.getRight());
+			System.out.println("pair" + barrel[0] + barrel[1]+ spot[0] +spot[1]);
 			if(isBarrelAtSpot(pair)){
+				
 				count++;
 			}
 		}
+		return count;*/
+		ArrayList<Barrel> barrels = new ArrayList<Barrel>();
+		ArrayList<Spot> spots = new ArrayList<Spot>();
+		for (BarrelSpotPair<Barrel, Spot> pair : barrelSpotPairs) {
+			barrels.add(pair.getLeft());
+			spots.add(pair.getRight());
+		}
+		int count=0;
+		for (Iterator<Barrel> biter = barrels.iterator(); biter.hasNext(); ) {
+		    Barrel b= biter.next();
+		    for (Iterator<Spot> siter = spots.iterator(); siter.hasNext(); ) {
+			    Spot s= siter.next();
+			    if (h2(new BarrelSpotPair<Barrel, Spot>(b, s))==0) {
+			        count++;
+			    }
+		    
+		    }   
+		}
+		
 		return count;
+		
 	}
 	
 	public boolean isBarrelAtSpot(BarrelSpotPair<Barrel, Spot> pair){
@@ -359,7 +390,7 @@ public class AStar implements Runnable{
 	
 	/*
 	 * @Dariusz
-	 * @Comment used only to display data fo tests
+	 * @Comment used only to display data for tests
 	 */
 	public void moveFromRootWitDisp(Move move){
 		ArrayList<Move> moves = new ArrayList<Move>();
@@ -390,7 +421,7 @@ public class AStar implements Runnable{
 		int h1 = Math.abs(barrel[0] -bulldozer[0]) + Math.abs(barrel[1] -bulldozer[1]);
 		int h2 = Math.abs(barrel[0] -spot[0]) + Math.abs(barrel[1] -spot[1]);
 		*/
-		return h2() ; //+ h1();
+		return hh() ; //+ h1();
 		
 	}
 	
@@ -416,6 +447,54 @@ public class AStar implements Runnable{
 		}
 		return h2;
 	}
+	
+	
+	public int hh(){
+		ArrayList<Barrel> barrels = new ArrayList<Barrel>();
+		ArrayList<Spot> spots = new ArrayList<Spot>();
+		for (BarrelSpotPair<Barrel, Spot> pair : barrelSpotPairs) {
+			barrels.add(pair.getLeft());
+			spots.add(pair.getRight());
+		}
+		
+		for (Iterator<Barrel> biter = barrels.iterator(); biter.hasNext(); ) {
+		    Barrel b= biter.next();
+		    for (Iterator<Spot> siter = spots.iterator(); siter.hasNext(); ) {
+			    Spot s= siter.next();
+			    if (h2(new BarrelSpotPair<Barrel, Spot>(b, s))==0) {
+			        biter.remove();
+			        siter.remove();
+			    }
+		    
+		    }   
+		}
+		int dist =0;
+		for (Barrel barrel : barrels) {
+			int min =0;
+			Spot smin=null;
+			for (Spot spot : spots) {
+				if(smin==null){
+					smin = spot;
+					min = h2(new BarrelSpotPair<Barrel, Spot>(barrel, spot));
+				}else {
+					int i = h2(new BarrelSpotPair<Barrel, Spot>(barrel, spot));
+					if(i<min){
+						smin = spot;
+						min = i;
+					}
+				}
+			}
+			dist += min;
+			
+		}
+		
+		
+		return dist;
+	}
+	
+	
+	
+	
 	
 	public int h2(BarrelSpotPair<Barrel, Spot> pair){
 		int[] barrel = level.getMovablesMap().findBarrel(pair.getLeft());
@@ -490,6 +569,22 @@ public class AStar implements Runnable{
 
 	public Date getEndDate() {
 		return endDate;
+	}
+
+	public int getLoopRemoval() {
+		return loopRemoval;
+	}
+
+	public void setLoopRemoval(int loopRemoval) {
+		this.loopRemoval = loopRemoval;
+	}
+
+	public int getStepsPerBatSRate() {
+		return stepsPerBatSRate;
+	}
+
+	public void setStepsPerBatSRate(int stepsPerBatS) {
+		this.stepsPerBatSRate = stepsPerBatS;
 	}
 
 	

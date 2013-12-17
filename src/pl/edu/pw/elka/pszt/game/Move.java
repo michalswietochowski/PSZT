@@ -33,6 +33,8 @@ public class Move {
 			nextMove = new Move(xo, yo, xo+diffY, yo-diffX);
 		}else if(to=='R'){
 			nextMove = new Move(xo, yo, xo-diffY, yo+diffX);
+		}else if(to=='B'){
+			nextMove = new Move(xo, yo, xo-diffX, yo-diffY);
 		}
 		
 		//System.out.println("Next move " + nextMove.toString());

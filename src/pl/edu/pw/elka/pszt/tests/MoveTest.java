@@ -24,6 +24,8 @@ import pl.edu.pw.elka.pszt.utils.LevelFactory;
 public class MoveTest {
 
 	 Level level1;
+	 Level level2;
+	 Level level3;
 	AStar astar;
 	Move initMoveN, initMoveE, initMoveS, initMoveW;
 	ArrayList<Barrel> barrels;
@@ -36,6 +38,8 @@ public class MoveTest {
 		try {
 			
             level1 = LevelFactory.createFromProperties("level1");
+            level2 = LevelFactory.createFromProperties("level2");
+            level3 = LevelFactory.createFromProperties("level3");
             astar = new AStar(level1);
             initMoves();
             //System.out.println(level1);
@@ -109,6 +113,7 @@ public class MoveTest {
 		canMoveForwardTest();
 		canMoveLeftTest();
 		canMoveRightTest();
+		canMoveBackTest();
 		moveBulldozerTest();
 		
 	}
@@ -188,25 +193,24 @@ public class MoveTest {
 	public void AstarTest(){
 		
 		System.out.println("\n AstarTest \n");
-	/*
-		//
-		BarrelSpotPair<Barrel, Spot> pair ;
-		barrelSpotPairs = new ArrayList<BarrelSpotPair<Barrel,Spot>>();
-	
-		pair = new BarrelSpotPair<Barrel, Spot>(barrels.get(0), spots.get(2));
-		barrelSpotPairs.add(pair);
-		pair = new BarrelSpotPair<Barrel, Spot>(barrels.get(1), spots.get(0));
-		barrelSpotPairs.add(pair);
-		pair = new BarrelSpotPair<Barrel, Spot>(barrels.get(2), spots.get(1));
-		barrelSpotPairs.add(pair);
-		*/
-		//
-		//InitLevel2();
 		
-		ArrayList<BarrelSpotPair<Barrel, Spot>> barrelSpotPairsT = barrelSpotPairs;
-		Collections.reverse(barrelSpotPairsT);
-		astar.setBarrelSpotPairs(barrelSpotPairsT);
-		astar.setInitialMove(initMoveS);
+		/*
+		astar = new AStar(level1);
+		astar.setLoopRemoval(5);
+		astar.setStepsPerBatSRate(11);
+		
+		//*/
+		/*
+		astar = new AStar(level2);
+		astar.setLoopRemoval(8);
+		astar.setStepsPerBatSRate(11);
+		*/
+		///*
+		astar = new AStar(level3);
+		astar.setLoopRemoval(6);
+		astar.setStepsPerBatSRate(8);
+		//*/
+		
 		astar.run();
 		System.out.println("path size = " + astar.getPathSize());
 		assertEquals(33, astar.getPathSize());
@@ -353,9 +357,30 @@ public class MoveTest {
 		
 	}
 	
+	private void canMoveBackTest(){
+		System.out.println("\n canMoveBacktTest \n");
+		
+		astar.setInitialMove(initMoveN);
+		Move current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'B'));
+		
+		astar.setInitialMove(initMoveE);
+		current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'B'));
+		
+		astar.setInitialMove(initMoveS);
+		current = astar.getMoveTree().getCurrentNode();
+		assertTrue(astar.checkMove(current,'B'));
+		
+		astar.setInitialMove(initMoveW);
+		current = astar.getMoveTree().getCurrentNode();
+		assertFalse(astar.checkMove(current,'B'));
+		
+	}
+	
 	private AStar moveBulldozerTest(){
 		
-		//System.out.println("\n moveBulldozerTest \n");
+		System.out.println("\n moveBulldozerTest \n");
 		System.out.println(astar.getLevel().getMovablesMap().toString());
 		
 		Move nextMove = initMoveN.calcNextMove('F');

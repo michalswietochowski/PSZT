@@ -8,10 +8,15 @@ public class MoveTree {
 	private Move root;
 	private Move currentNode;
 	private ArrayList<Move> youngest;
+	private ArrayList<Move> deadEnds;
 	
+	public MoveTree(){
+		deadEnds = new ArrayList<Move>();
+	}
 	
 	public Move getMin(){
 		return null;
+		
 	}
 	
 	
@@ -41,5 +46,24 @@ public class MoveTree {
 
 	public void setYoungest(ArrayList<Move> youngest) {
 		this.youngest = youngest;
+	}
+
+
+
+	public ArrayList<Move> getDeadEnds() {
+		return deadEnds;
+	}
+
+	public void addDeadEnd(Move move){
+		for (Move deadEnd : getDeadEnds()) {
+			if(move.equals(deadEnd)){
+				return;
+			}
+		}
+		deadEnds.add(move);
+	}
+
+	public void setDeadEnds(ArrayList<Move> deadEnds) {
+		this.deadEnds = deadEnds;
 	}
 }
