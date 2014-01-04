@@ -109,6 +109,12 @@ public class AStar implements Runnable{
 			moveFromRoot(child);
 			child.setF(hh());
 			children.add(child);
+			if(isAnyBarrelAtCorner()){
+				child.setDeadEnd(true);
+				moveTree.addDeadEnd(child);
+				discardedMoves++;
+				
+			}
 			goBackToRoot(child);
 		}
 		if(checkMove(move, 'L')) {
@@ -117,6 +123,12 @@ public class AStar implements Runnable{
 			moveFromRoot(child);
 			child.setF(hh());
 			children.add(child);
+			if(isAnyBarrelAtCorner()){
+				child.setDeadEnd(true);
+				moveTree.addDeadEnd(child);
+				discardedMoves++;
+				
+			}
 			goBackToRoot(child);
 			
 		}
@@ -126,6 +138,12 @@ public class AStar implements Runnable{
 			moveFromRoot(child);
 			child.setF(hh());
 			children.add(child);
+			if(isAnyBarrelAtCorner()){
+				child.setDeadEnd(true);
+				moveTree.addDeadEnd(child);
+				discardedMoves++;
+				
+			}
 			goBackToRoot(child);
 		}
 		if(move.isMovedBarrel() 
@@ -136,6 +154,12 @@ public class AStar implements Runnable{
 			moveFromRoot(child);
 			child.setF(hh());
 			children.add(child);
+			if(isAnyBarrelAtCorner()){
+				child.setDeadEnd(true);
+				moveTree.addDeadEnd(child);
+				discardedMoves++;
+				
+			}
 			goBackToRoot(child);
 		}
 		
@@ -179,27 +203,31 @@ public class AStar implements Runnable{
 				for (Move deadEnd : moveTree.getDeadEnds()) {
 					if(move.equals(deadEnd)){
 						eq=true;
-						discardedMovesB++;
+						discardedMoves++;
 						break;
 					}
 				}
 		
-			if(move.getSize() > stepsPerBatSRate){
-			int expectedBatS = (int)(move.getSize()/stepsPerBatSRate);
-			moveFromRoot(move);
-			
-			if(
-					getNumberOfBarrelsAtSpot()>(expectedBatS-1) &&
-					 getNumberOfBarrelsAtSpot()<=(expectedBatS+1)
-			){}else {
-				move.setDeadEnd(true);
-				moveTree.addDeadEnd(move);
-				discardedMoves++;
-				goBackToRoot(move);
-				return;
+				if(stepsPerBatSRate!=0){
+					if(move.getSize() > stepsPerBatSRate){
+					int expectedBatS = (int)(move.getSize()/stepsPerBatSRate);
+					moveFromRoot(move);
+					
+					if(
+							getNumberOfBarrelsAtSpot()>(expectedBatS-1) &&
+							 getNumberOfBarrelsAtSpot()<=(expectedBatS+1)
+					){}else {
+						move.setDeadEnd(true);
+						moveTree.addDeadEnd(move);
+						discardedMoves++;
+						goBackToRoot(move);
+						return;
+					}
+					
+					
+					goBackToRoot(move);
+				}
 			}
-			goBackToRoot(move);
-		}
 	}
 	
 	public boolean checkMove(Move move, char to){
@@ -492,7 +520,9 @@ public class AStar implements Runnable{
 		return dist;
 	}
 	
-	
+	public boolean isAnyBarrelAtCorner(){
+		return level.isAnyBarrelAtCorner();
+	}
 	
 	
 	

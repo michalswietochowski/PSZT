@@ -76,6 +76,46 @@ public class Level {
 			return false;
 	} 
     
+    public boolean isAnyBarrelAtCorner(){
+    	ArrayList<Barrel> barrels= getMovablesMap().getBarrels();
+    	
+    	for(int i =0; i<barrels.size(); i++){
+    		int[] walls = new int[4];
+    		
+    		int[] coords = getMovablesMap().findBarrel(barrels.get(i));
+    		if(!map.isSpot(coords[0], coords[1])){
+	    		if(!map.canMove(coords[0]-1, coords[1])){
+	    			walls[0]=1;
+	    		}
+	    		if(!map.canMove(coords[0], coords[1]-1)){
+	    			walls[1]=1;
+	    		}
+	    		if(!map.canMove(coords[0]+1, coords[1])){
+	    			walls[2]=1;
+	    		}
+	    		if(!map.canMove(coords[0], coords[1]+1)){
+	    			walls[3]=1;
+	    		}
+    		}
+    		if(walls[0] ==1 && walls[1]==1){
+    			return true;
+    		}
+    		if(walls[1] ==1 && walls[2]==1){
+    			return true;
+    		}
+    		if(walls[2] ==1 && walls[3]==1){
+    			return true;
+    		}
+    		if(walls[3] ==1 && walls[0]==1){
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    
+    
+    
     public int barrelWalls(Barrel barrel){
     	int[] coords = getMovablesMap().findBarrel(barrel);
     	/*System.out.println("coords " + coords[0] + coords[1]);

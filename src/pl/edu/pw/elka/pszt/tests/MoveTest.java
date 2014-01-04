@@ -132,9 +132,9 @@ public class MoveTest {
 		astar.setBarrelSpotPairs(barrelSpotPairs);
 		
 		// h - (h2 only) distance  barrel to spot
-		assertEquals(4, astar.h(barrelSpotPairs.get(0)) );
-		assertEquals(4, astar.h(barrelSpotPairs.get(1)));
-		assertEquals(4, astar.h(barrelSpotPairs.get(2)));
+		assertEquals(3, astar.h(barrelSpotPairs.get(0)) );
+		assertEquals(3, astar.h(barrelSpotPairs.get(1)));
+		assertEquals(3, astar.h(barrelSpotPairs.get(2)));
 		
 		/**
 		 *  h - (h2 +h1) distance  barrel to spot
@@ -207,7 +207,7 @@ public class MoveTest {
 		*/
 		///*
 		astar = new AStar(level3);
-		astar.setLoopRemoval(6);
+		astar.setLoopRemoval(5);
 		astar.setStepsPerBatSRate(8);
 		//*/
 		
@@ -220,74 +220,30 @@ public class MoveTest {
 	@Test
 	public void barrelAtCornerTest(){
 		
-		/* DD rezygnyje nie daje dobrych wyników
 		System.out.println("\n barrelAtCornerTest \n");
+		astar = new AStar(level3);
+		int [] bulldozerCoord = level3.getMovablesMap().findBulldozer();
+		initMoveN = new Move(
+				bulldozerCoord[0],
+				bulldozerCoord[1]+1,
+				bulldozerCoord[0],
+				bulldozerCoord[1]);
+		System.out.println(astar.getLevel().getMovablesMap().toString());
+		assertFalse(astar.isAnyBarrelAtCorner());
+		Move nextMove = initMoveN.calcNextMove('R');
+		//astar.checkMoves();
+		astar.getLevel().move(nextMove);
+		System.out.println(astar.getLevel().getMovablesMap().toString());
 		
-		astar.setBarrelSpotPairs(barrelSpotPairs);
-		assertFalse(astar.barrelAtCorner());
-		//System.out.println("\n moveBulldozerTest \n");
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				
-				Move nextMove = initMoveS.calcNextMove('F');
-				//astar.checkMoves();
-				astar.getLevel().move(nextMove);
-				nextMove = nextMove.calcNextMove('R');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-
-				nextMove = nextMove.calcNextMove('R');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				nextMove = nextMove.calcNextMove('L');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				nextMove = nextMove.calcNextMove('F');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				nextMove = nextMove.calcNextMove('L');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-
-				nextMove = nextMove.calcNextMove('L');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				nextMove = nextMove.calcNextMove('F');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				nextMove = nextMove.calcNextMove('L');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				
-			
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				nextMove = nextMove.calcNextMove('R');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				nextMove = nextMove.calcNextMove('L');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				
-				
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				nextMove = nextMove.calcNextMove('F');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				nextMove = nextMove.calcNextMove('L');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				
-				nextMove = nextMove.calcNextMove('L');
-				astar.getLevel().move(nextMove);
-				System.out.println(astar.getLevel().getMovablesMap().toString());
-				nextMove = nextMove.calcNextMove('F');
-				astar.getLevel().move(nextMove);
-				
-				
-				
-		 System.out.println(astar.getLevel().getMovablesMap().toString());
+		/////////////////////
+		nextMove = nextMove.calcNextMove('F');
+		//astar.checkMoves();
+		astar.getLevel().move(nextMove);
+		System.out.println(astar.getLevel().getMovablesMap().toString());
+		assertTrue(astar.isAnyBarrelAtCorner());
+		//////////////////
 		
-		 assertTrue(astar.barrelAtCorner());
-		*/
+		
 		
 	}
 	
@@ -382,7 +338,7 @@ public class MoveTest {
 		
 		System.out.println("\n moveBulldozerTest \n");
 		System.out.println(astar.getLevel().getMovablesMap().toString());
-		
+		assertFalse(astar.isAnyBarrelAtCorner());
 		Move nextMove = initMoveN.calcNextMove('F');
 		//astar.checkMoves();
 		astar.getLevel().move(nextMove);
@@ -397,6 +353,7 @@ public class MoveTest {
 		//
 		System.out.println(astar.getLevel().getMovablesMap().toString());
 		//
+		assertFalse(astar.isAnyBarrelAtCorner());
 		bulldozerCoord = astar.getLevel().getMovablesMap().findBulldozer();
 		assertTrue(bulldozerCoord[0]==nextMove.getXo());
 		assertTrue(bulldozerCoord[1]==nextMove.getYo());
@@ -410,6 +367,15 @@ public class MoveTest {
 		assertTrue(astar.getLevel().getMovablesMap().getMovables()[1][2].getClass()==Barrel.class);
 		
 		System.out.println(astar.getLevel().getMovablesMap().toString());
+		assertTrue(astar.isAnyBarrelAtCorner());
+		/////////////////////
+		nextMove = nextMove.calcNextMove('L');
+		//astar.checkMoves();
+		astar.getLevel().move(nextMove);
+		System.out.println(astar.getLevel().getMovablesMap().toString());
+		assertTrue(astar.isAnyBarrelAtCorner());
+		//////////////////
+		
 		return astar;
 		
 	}

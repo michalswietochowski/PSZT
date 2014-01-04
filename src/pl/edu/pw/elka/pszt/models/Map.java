@@ -37,7 +37,7 @@ public class Map {
     	return false;
     }
     
-    private boolean isSpot(int x, int y){
+    public boolean isSpot(int x, int y){
     	if(mapObjects[x][y].getClass() == Spot.class){
     		return true;
     	}
