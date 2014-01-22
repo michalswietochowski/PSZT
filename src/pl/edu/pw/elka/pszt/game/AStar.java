@@ -82,14 +82,11 @@ public class AStar extends Task {
 			System.out.println("\nstart round # " + movesCount);
 			minMove = generateNewMovesPop();
 			moveFromRoot(minMove);
-<<<<<<< HEAD
 			System.out.println(getLevel().getMovablesMap());
 			System.out.println("barrels at spots: " + getNumberOfBarrelsAtSpot());
 			lastMove=minMove;
-=======
             update(getLevel().getMovablesMap().toString());
 			
->>>>>>> refs/remotes/origin/master
 			if(getNumberOfBarrelsAtSpot()==barrelSpotPairs.size()){
                 update("route found");
 				endDate  = new Date();
@@ -98,13 +95,10 @@ public class AStar extends Task {
 			}
 			goBackToRoot(minMove);
 		}
-<<<<<<< HEAD
 		//System.out.println(getLevel().getMovablesMap());
 		System.out.println("start time" + DATEFORMAT.format(startdate));
-=======
         update(getLevel().getMovablesMap().toString());
         update("start time" + DATEFORMAT.format(startdate));
->>>>>>> refs/remotes/origin/master
 	}
 	
 	
@@ -277,15 +271,15 @@ public class AStar extends Task {
 		}
 		//System.out.println("I USED BEST: \n" + parents + "\n");
 		int size = parents.size();
-<<<<<<< HEAD
+
 		//System.out.println("size beore"  + size);
 		System.out.println("move #"  + movesCount++ + "        move length =" + parents.get(0).getSize() );
 		System.out.println("F: " + parents.get(0).getF() );
 		
 		
-=======
+
 		update("size beore" + size);
->>>>>>> refs/remotes/origin/master
+
 		int i=0;
 		for (Iterator<Move> iterator = parents.iterator(); iterator.hasNext(); ) {
 		    Move move = iterator.next();
@@ -295,7 +289,7 @@ public class AStar extends Task {
 		    	iterator.remove();
 		    }
 		}
-<<<<<<< HEAD
+
 		System.out.println("usun¹³em " + i);
 		return findMinMoveFrom(parents);
 		
@@ -647,7 +641,6 @@ public class AStar extends Task {
 		return endDate;
 	}
 
-<<<<<<< HEAD
 	public int getLoopRemoval() {
 		return loopRemoval;
 	}
@@ -665,8 +658,7 @@ public class AStar extends Task {
 		this.stepsPerBatSRate = stepsPerBatS;
 	}
 
-	
-=======
+
     public void setThreadId(String threadId) {
         this.threadId = threadId;
     }
@@ -690,5 +682,5 @@ public class AStar extends Task {
         run();
         return this;
     }
->>>>>>> refs/remotes/origin/master
+
 }
