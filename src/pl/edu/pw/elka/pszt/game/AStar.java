@@ -5,12 +5,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 
+import javafx.concurrent.Task;
 import pl.edu.pw.elka.pszt.models.Barrel;
 import pl.edu.pw.elka.pszt.models.BarrelSpotPair;
 import pl.edu.pw.elka.pszt.models.Bulldozer;
@@ -19,7 +16,7 @@ import pl.edu.pw.elka.pszt.models.Level;
 import pl.edu.pw.elka.pszt.models.Spot;
 import sun.org.mozilla.javascript.internal.ast.ArrayLiteral;
 
-public class AStar implements Runnable{
+public class AStar extends Task {
 
 	private Level level;
 	private MoveTree moveTree;
@@ -36,9 +33,9 @@ public class AStar implements Runnable{
 	private int movesCount=0;
 	
 	private Date startDate, endDate;
-	private static DateFormat DATEFORMAT =  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");;
-	
-	
+	private static DateFormat DATEFORMAT =  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
+
+    private String threadId;
 	
 	public AStar(Level level, Move initialMove){
 		this.level = level;		
@@ -76,7 +73,7 @@ public class AStar implements Runnable{
 
 	@Override
 	public void run(){
-		
+		update("A* thread started");
 		Date startdate = new Date();
 		Move minMove = generateNewMovesPop();
 		checkMoves(minMove);
@@ -85,19 +82,29 @@ public class AStar implements Runnable{
 			System.out.println("\nstart round # " + movesCount);
 			minMove = generateNewMovesPop();
 			moveFromRoot(minMove);
+<<<<<<< HEAD
 			System.out.println(getLevel().getMovablesMap());
 			System.out.println("barrels at spots: " + getNumberOfBarrelsAtSpot());
 			lastMove=minMove;
+=======
+            update(getLevel().getMovablesMap().toString());
+			
+>>>>>>> refs/remotes/origin/master
 			if(getNumberOfBarrelsAtSpot()==barrelSpotPairs.size()){
-				System.out.println("route found");
+                update("route found");
 				endDate  = new Date();
 				
 				break;
 			}
 			goBackToRoot(minMove);
 		}
+<<<<<<< HEAD
 		//System.out.println(getLevel().getMovablesMap());
 		System.out.println("start time" + DATEFORMAT.format(startdate));
+=======
+        update(getLevel().getMovablesMap().toString());
+        update("start time" + DATEFORMAT.format(startdate));
+>>>>>>> refs/remotes/origin/master
 	}
 	
 	
@@ -249,7 +256,7 @@ public class AStar implements Runnable{
 		}
 		boolean canMove = level.canMove(nextMove);
 		/*if(nextMove.areAllChildrenDeadEnd()){
-			System.out.println("znalaz³em martwe dziecko");
+			update("znalazlem martwe dziecko");
 			return false;
 			nigdy nie znajduje
 		}*/
@@ -270,11 +277,15 @@ public class AStar implements Runnable{
 		}
 		//System.out.println("I USED BEST: \n" + parents + "\n");
 		int size = parents.size();
+<<<<<<< HEAD
 		//System.out.println("size beore"  + size);
 		System.out.println("move #"  + movesCount++ + "        move length =" + parents.get(0).getSize() );
 		System.out.println("F: " + parents.get(0).getF() );
 		
 		
+=======
+		update("size beore" + size);
+>>>>>>> refs/remotes/origin/master
 		int i=0;
 		for (Iterator<Move> iterator = parents.iterator(); iterator.hasNext(); ) {
 		    Move move = iterator.next();
@@ -284,18 +295,27 @@ public class AStar implements Runnable{
 		    	iterator.remove();
 		    }
 		}
+<<<<<<< HEAD
 		System.out.println("usun¹³em " + i);
 		return findMinMoveFrom(parents);
 		
 		/*
+=======
+		update("usunalem " + i);
+>>>>>>> refs/remotes/origin/master
 		ArrayList<Move> youngest = new ArrayList<Move>();
 		for (Move parent : parents) {
 			youngest.addAll(parent.getChildren());
 			
 		}
+<<<<<<< HEAD
 		System.out.println("Discarder moves  " + discardedMoves);
 		System.out.println("Discarder movesB  " + discardedMovesB);
 		moveTree.setcheckedMoves(parents);
+=======
+		update("Discarder moves  " + discardedMoves);
+		moveTree.setYoungest(youngest);
+>>>>>>> refs/remotes/origin/master
 		
 		return findMinMoveFrom(youngest);*/
 		
@@ -457,8 +477,8 @@ public class AStar implements Runnable{
 		Collections.reverse(moves);
 		for (Move move2 : moves) {
 			level.move(move2);
-			System.out.println("moves from root ");
-			System.out.println(level.getMovablesMap());
+			update("moves from root ");
+			update(level.getMovablesMap().toString());
 			
 		}
 	}
@@ -486,7 +506,7 @@ public class AStar implements Runnable{
 			int[] barrel = level.getMovablesMap().findBarrel(pair.getLeft());
 			int[] bulldozer = level.getMovablesMap().findBulldozer();
 			if(barrel==null){
-				System.out.println( "bef " + level.getMovablesMap());
+				update("bef " + level.getMovablesMap());
 			}
 			h1 += Math.abs(barrel[0] -bulldozer[0]) + Math.abs(barrel[1] -bulldozer[1]);
 		}
@@ -627,6 +647,7 @@ public class AStar implements Runnable{
 		return endDate;
 	}
 
+<<<<<<< HEAD
 	public int getLoopRemoval() {
 		return loopRemoval;
 	}
@@ -645,4 +666,29 @@ public class AStar implements Runnable{
 	}
 
 	
+=======
+    public void setThreadId(String threadId) {
+        this.threadId = threadId;
+    }
+
+    /**
+     * Shorthand notification method
+     * @param message argument to send to observer or console
+     */
+    private void update(String message)
+    {
+        if (threadId != null) {
+            message = String.format("[%s][Thread %s] %s", DATEFORMAT.format(new Date()), threadId, message);
+            updateMessage(message);
+        } else {
+            System.out.println(message);
+        }
+    }
+
+    @Override
+    protected Object call() throws Exception {
+        run();
+        return this;
+    }
+>>>>>>> refs/remotes/origin/master
 }
