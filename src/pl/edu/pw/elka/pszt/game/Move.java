@@ -12,6 +12,7 @@ public class Move {
 	private boolean isDeadEnd;
 	private int f;
 	private int barellsAtSpots = 0;
+	private boolean checked = false;
 	//private Level level;
 	
 	public Move(int xi, int yi, int xo, int yo){
@@ -93,7 +94,7 @@ public class Move {
 	
 	 @Override
 	   public String toString() {
-		 return String.format("Move from %d,%d to %d,%d barrel %b", this.xi, this.yi, this.xo, this.yo, this.movedBarrel);
+		 return String.format("Move from %d,%d to %d,%d barrel %b; size %d", this.xi, this.yi, this.xo, this.yo, this.movedBarrel, this.f);
 		 
 	 }
 	 @Override
@@ -176,5 +177,13 @@ public class Move {
 
 	public void setBarellsAtSpots(int barellsAtSpots) {
 		this.barellsAtSpots = barellsAtSpots;
+	}
+
+	public boolean wasChecked() {
+		return checked;
+	}
+
+	public void setChecked(boolean wasChecked) {
+		this.checked = wasChecked;
 	}
 }

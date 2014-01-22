@@ -194,11 +194,11 @@ public class MoveTest {
 		
 		System.out.println("\n AstarTest \n");
 		
-		/*
-		astar = new AStar(level1);
-		astar.setLoopRemoval(5);
-		astar.setStepsPerBatSRate(11);
 		
+		astar = new AStar(level3);
+		astar.setLoopRemoval(8);
+		astar.setStepsPerBatSRate(0);
+		astar.setMaxNumberOfSteps(100000);
 		//*/
 		/*
 		astar = new AStar(level2);
@@ -206,14 +206,15 @@ public class MoveTest {
 		astar.setStepsPerBatSRate(11);
 		*/
 		///*
-		astar = new AStar(level3);
+		/*astar = new AStar(level3);
 		astar.setLoopRemoval(5);
 		astar.setStepsPerBatSRate(8);
 		//*/
 		
 		astar.run();
-		System.out.println("path size = " + astar.getPathSize());
+		//System.out.println("path size = " + astar.getPathSize());
 		assertEquals(33, astar.getPathSize());
+		
 	}
 	
 	
@@ -247,7 +248,25 @@ public class MoveTest {
 		
 	}
 	
-
+	@Test
+	public void getAllNodesTest(){
+		
+		
+		
+		System.out.println("\n getAllNodesTest \n");
+		System.out.println(astar.getLevel().getMovablesMap().toString());
+		
+		System.out.println(astar.getMoveTree().getAllNodes());
+		astar = new AStar(level1);
+		astar.setLoopRemoval(5);
+		astar.setStepsPerBatSRate(11);
+		astar.setMaxNumberOfSteps(4);
+		astar.run();
+		System.out.println(astar.getMoveTree().getAllNodes());
+		System.out.println("\n BEST: \n" + astar.getMoveTree().getBest());
+		System.out.println(astar.getLevel().getMovablesMap().toString());
+		//System.out.println(astar.getLevel().getMovablesMap().toString());
+	}
 	
 	private void canMoveForwardTest(){
 		System.out.println("\n canMoveForwardTest \n");

@@ -33,6 +33,7 @@ public class AStar implements Runnable{
 	private int maxNumberOfSteps=50;
 	private int loopRemoval = 5;
 	private int stepsPerBatSRate =8;
+	private int movesCount=0;
 	
 	private Date startDate, endDate;
 	private static DateFormat DATEFORMAT =  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");;
@@ -63,7 +64,7 @@ public class AStar implements Runnable{
 		}
 		int [] bulldozerCoord = level.getMovablesMap().findBulldozer();
 		Move root = new Move(
-				bulldozerCoord[0]-1,
+				bulldozerCoord[0]+1,
 				bulldozerCoord[1],
 				bulldozerCoord[0],
 				bulldozerCoord[1]
@@ -78,21 +79,24 @@ public class AStar implements Runnable{
 		
 		Date startdate = new Date();
 		Move minMove = generateNewMovesPop();
+		checkMoves(minMove);
 		
 		for(int i=2 ;i<maxNumberOfSteps; i++){
+			System.out.println("\nstart round # " + movesCount);
 			minMove = generateNewMovesPop();
 			moveFromRoot(minMove);
 			System.out.println(getLevel().getMovablesMap());
 			System.out.println("barrels at spots: " + getNumberOfBarrelsAtSpot());
+			lastMove=minMove;
 			if(getNumberOfBarrelsAtSpot()==barrelSpotPairs.size()){
 				System.out.println("route found");
 				endDate  = new Date();
-				lastMove=minMove;
+				
 				break;
 			}
 			goBackToRoot(minMove);
 		}
-		System.out.println(getLevel().getMovablesMap());
+		//System.out.println(getLevel().getMovablesMap());
 		System.out.println("start time" + DATEFORMAT.format(startdate));
 	}
 	
@@ -107,7 +111,7 @@ public class AStar implements Runnable{
 			Move child = move.calcNextMove('F');
 			child.setParent(move);
 			moveFromRoot(child);
-			child.setF(hh());
+			child.setF(hh()+child.getSize());
 			children.add(child);
 			if(isAnyBarrelAtCorner()){
 				child.setDeadEnd(true);
@@ -121,7 +125,7 @@ public class AStar implements Runnable{
 			Move child = move.calcNextMove('L');
 			child.setParent(move);
 			moveFromRoot(child);
-			child.setF(hh());
+			child.setF(hh()+child.getSize());
 			children.add(child);
 			if(isAnyBarrelAtCorner()){
 				child.setDeadEnd(true);
@@ -136,7 +140,7 @@ public class AStar implements Runnable{
 			Move child = move.calcNextMove('R');
 			child.setParent(move);
 			moveFromRoot(child);
-			child.setF(hh());
+			child.setF(hh()+child.getSize());
 			children.add(child);
 			if(isAnyBarrelAtCorner()){
 				child.setDeadEnd(true);
@@ -152,7 +156,7 @@ public class AStar implements Runnable{
 			
 			child.setParent(move);
 			moveFromRoot(child);
-			child.setF(hh());
+			child.setF(hh()+child.getSize());
 			children.add(child);
 			if(isAnyBarrelAtCorner()){
 				child.setDeadEnd(true);
@@ -164,6 +168,9 @@ public class AStar implements Runnable{
 		}
 		
 		move.setChildren(children);
+		move.setChecked(true);
+		
+		/*
 		if(children.size()==0 || move.areAllChildrenDeadEnd()){
 			move.setDeadEnd(true);
 			moveTree.addDeadEnd(move);
@@ -228,6 +235,7 @@ public class AStar implements Runnable{
 					goBackToRoot(move);
 				}
 			}
+			*/
 	}
 	
 	public boolean checkMove(Move move, char to){
@@ -255,11 +263,17 @@ public class AStar implements Runnable{
 	
 	
 	public Move generateNewMovesPop(){
-		ArrayList<Move> parents = moveTree.getYoungest(); //findYoungest();
-		
+		ArrayList<Move> parents = moveTree.getBest(); //findYoungest();
+		if(parents.size()==0){
+			System.out.println("I USED YOUNGEST");
+			parents = moveTree.getYoungest();
+		}
+		//System.out.println("I USED BEST: \n" + parents + "\n");
 		int size = parents.size();
-		System.out.println("size beore"  + size);
-		System.out.println("move "  + parents.get(0).getSize());
+		//System.out.println("size beore"  + size);
+		System.out.println("move #"  + movesCount++ + "        move length =" + parents.get(0).getSize() );
+		System.out.println("F: " + parents.get(0).getF() );
+		
 		
 		int i=0;
 		for (Iterator<Move> iterator = parents.iterator(); iterator.hasNext(); ) {
@@ -271,6 +285,9 @@ public class AStar implements Runnable{
 		    }
 		}
 		System.out.println("usun¹³em " + i);
+		return findMinMoveFrom(parents);
+		
+		/*
 		ArrayList<Move> youngest = new ArrayList<Move>();
 		for (Move parent : parents) {
 			youngest.addAll(parent.getChildren());
@@ -278,9 +295,11 @@ public class AStar implements Runnable{
 		}
 		System.out.println("Discarder moves  " + discardedMoves);
 		System.out.println("Discarder movesB  " + discardedMovesB);
-		moveTree.setYoungest(youngest);
+		moveTree.setcheckedMoves(parents);
 		
-		return findMinMoveFrom(youngest);
+		return findMinMoveFrom(youngest);*/
+		
+		
 	}
 	
 	
@@ -310,6 +329,13 @@ public class AStar implements Runnable{
 	public void moveFromRoot(Move move){
 		ArrayList<Move> moves = new ArrayList<Move>();
 		moves.add(move);
+		
+		
+		if(move == null || moveTree.getRoot()==null)
+		{
+			int x = 0;
+		}
+		
 		while(move.getParent()!=moveTree.getRoot()){
 			
 			move = move.getParent();
@@ -607,6 +633,7 @@ public class AStar implements Runnable{
 
 	public void setLoopRemoval(int loopRemoval) {
 		this.loopRemoval = loopRemoval;
+		moveTree.setLoopRemove(loopRemoval);
 	}
 
 	public int getStepsPerBatSRate() {
