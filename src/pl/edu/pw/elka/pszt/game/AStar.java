@@ -73,6 +73,10 @@ public class AStar extends Task {
 		checkMoves(minMove);
 
 		for(int i=2 ;i<maxNumberOfSteps; i++){
+            if (isCancelled()) {
+                update("CANCELLED");
+                return;
+            }
 			update("start round # " + movesCount);
 			minMove = generateNewMovesPop();
 			moveFromRoot(minMove);
@@ -686,7 +690,7 @@ public class AStar extends Task {
     private void update(String message)
     {
         if (threadId != null && observer != null) {
-            if (!message.equals("END")) {
+            if (!message.equals("END") && !message.equals("CANCELLED")) {
                 message = String.format("[%s][Thread %s] %s", DATEFORMAT.format(new Date()), threadId, message);
             }
             observer.update(threadId, message);

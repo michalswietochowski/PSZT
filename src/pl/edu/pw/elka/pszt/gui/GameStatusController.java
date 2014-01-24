@@ -15,6 +15,7 @@ import pl.edu.pw.elka.pszt.models.*;
 import pl.edu.pw.elka.pszt.utils.LevelFactory;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * PSZT
@@ -34,6 +35,7 @@ public class GameStatusController implements Observer {
     public TextField loopsRemovalCountTextField;
     public Label stepsLabel;
     public Button stepsPrevButton, stepsNextButton;
+    public Button stopButton;
     private int currentStep;
     private String currentThread;
     private ArrayList<Move> currentMoves;
@@ -56,20 +58,14 @@ public class GameStatusController implements Observer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        solveButton.setDisable(false);
-        statusListView.getItems().clear();
+        resetGUIState();
         statusListView.setDisable(true);
-        statsTableView.setDisable(true);
+        statusListView.getItems().clear();
         statsTableView.getItems().clear();
-        stepsLabel.setVisible(false);
-        stepsPrevButton.setVisible(false);
-        stepsPrevButton.setDisable(true);
-        stepsNextButton.setVisible(false);
         threadList.clear();
     }
 
-    protected String getCurrentLevelName()
-    {
+    protected String getCurrentLevelName() {
         return "level" + (levelComboBox.getSelectionModel().getSelectedIndex() + 1);
     }
 
@@ -94,13 +90,11 @@ public class GameStatusController implements Observer {
     }
 
     public void onSolveClick(ActionEvent actionEvent) {
+        resetGUIState();
         solveButton.setDisable(true);
-        statusListView.setDisable(false);
         progressIndicator.setVisible(true);
-        stepsLabel.setVisible(false);
-        stepsPrevButton.setVisible(false);
-        stepsPrevButton.setDisable(true);
-        stepsNextButton.setVisible(false);
+        stopButton.setVisible(true);
+        statusListView.setDisable(false);
         statusListView.getItems().clear();
         statsTableView.getItems().clear();
         threadList.clear();
@@ -135,7 +129,9 @@ public class GameStatusController implements Observer {
             astar.setMaxNumberOfSteps(100000);
             astar.setThreadId(String.valueOf(threadList.size() + 1));
             astar.setObserver(this);
-            new Thread(astar).start();
+            Thread th = new Thread(astar);
+            th.setDaemon(true);
+            th.start();
             threadList.add(astar);
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,36 +146,48 @@ public class GameStatusController implements Observer {
                 if (message.equals("END")) {
                     AStar astar = threadList.get(Integer.parseInt(threadId) - 1);
                     showStatsAndNav(astar);
-                } else {
-                    statusListView.getItems().add(0, message);
+                } else if (message.equals("CANCELLED")) {
+                    resetGUIState();
                 }
+                statusListView.getItems().add(0, message);
             }
         });
     }
 
     public void showStatsAndNav(AStar astar) {
-        progressIndicator.setVisible(false);
+        resetGUIState();
         statsTableView.setDisable(false);
-        solveButton.setDisable(false);
         stepsLabel.setVisible(true);
         stepsPrevButton.setVisible(true);
-        stepsPrevButton.setDisable(true);
         stepsNextButton.setVisible(true);
-        stepsNextButton.setDisable(false);
         currentStep = 0;
 
         currentMoves = astar.getMoves();
         currentMovesSize = currentMoves.size();
-        long time = astar.getTimeInterval();
+        double time = (double) astar.getTimeInterval() / 1000;
 
         drawStep(currentStep);
 
         ObservableList<StatsParam> stats = FXCollections.observableArrayList(
                 new StatsParam("Algorithm loops:", String.valueOf(astar.getMovesCount())),
                 new StatsParam("Bulldozer moves:", String.valueOf(currentMovesSize)),
-                new StatsParam("Elapsed time:", String.valueOf(time) + "ms")
+                new StatsParam("Elapsed time:", String.format("%.2fs", time))
         );
         statsTableView.setItems(stats);
+        stopAllThreads();
+    }
+
+    protected void resetGUIState()
+    {
+        progressIndicator.setVisible(false);
+        stopButton.setVisible(false);
+        statsTableView.setDisable(true);
+        solveButton.setDisable(false);
+        stepsLabel.setVisible(false);
+        stepsPrevButton.setVisible(false);
+        stepsPrevButton.setDisable(true);
+        stepsNextButton.setVisible(false);
+        stepsNextButton.setDisable(false);
     }
 
     public void onStepPrevClick(ActionEvent actionEvent) {
@@ -211,13 +219,26 @@ public class GameStatusController implements Observer {
             if (stepNum > 0) {
                 for (int i = 0; i < stepNum; i++) {
                     Move move = currentMoves.get(i);
-                    level.getMovablesMap().execute(move);
+                    level.move(move);
                 }
             }
             drawLevel(level);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void onStopClick(ActionEvent actionEvent) {
+        stopAllThreads();
+    }
+
+    protected void stopAllThreads() {
+        Iterator<AStar> iterator = threadList.iterator();
+        while (iterator.hasNext()) {
+            AStar astarThread = iterator.next();
+            astarThread.cancel();
+        }
+        threadList.clear();
     }
 
     public class StatsParam {
