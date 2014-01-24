@@ -41,6 +41,7 @@ public class GameStatusController implements Observer {
     public Button stopButton;
     public TextField loopsRemovalCountFromTextField;
     public TextField loopsRemovalCountToTextField;
+    public ToggleGroup algorithm;
     private int currentStep;
     private String currentThread;
     private ArrayList<Move> currentMoves;
@@ -54,6 +55,8 @@ public class GameStatusController implements Observer {
         TableColumn valueColumn = (TableColumn) statsTableView.getColumns().get(1);
         nameColumn.setCellValueFactory(new PropertyValueFactory<StatsParam, String>("name"));
         valueColumn.setCellValueFactory(new PropertyValueFactory<StatsParam, String>("value"));
+        algorithm.getToggles().get(0).setUserData("astar");
+        algorithm.getToggles().get(1).setUserData("idastar");
     }
 
     public void onLevelChange(ActionEvent actionEvent) {
@@ -251,6 +254,7 @@ public class GameStatusController implements Observer {
         drawStep(currentStep);
 
         ObservableList<StatsParam> stats = FXCollections.observableArrayList(
+                new StatsParam("Algorithm:", algorithm.getSelectedToggle().getUserData().equals("astar") ? "A*" : "IDA*"),
                 new StatsParam("Found route length:", String.valueOf(currentMovesSize)),
                 new StatsParam("Remove loops min:", String.valueOf(range.get(Integer.parseInt(currentThread) - 1))),
                 new StatsParam("Winner thread:", currentThread),

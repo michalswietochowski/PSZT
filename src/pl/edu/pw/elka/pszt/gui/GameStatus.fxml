@@ -6,7 +6,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: #ededed;" xmlns="http://javafx.com/javafx/2.2" fx:controller="pl.edu.pw.elka.pszt.gui.GameStatusController">
+<BorderPane prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: #ededed;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="pl.edu.pw.elka.pszt.gui.GameStatusController">
   <bottom>
     <Pane prefHeight="220.0">
       <children>
@@ -58,7 +58,24 @@
           </FlowPane.margin>
         </Label>
         <TextField fx:id="loopsRemovalCountToTextField" maxWidth="30.0" prefWidth="200.0" />
-        <Button fx:id="solveButton" disable="true" mnemonicParsing="false" onAction="#onSolveClick" text="Solve" FlowPane.margin="$x2" />
+        <RadioButton mnemonicParsing="false" selected="true" text="A*">
+          <toggleGroup>
+            <ToggleGroup fx:id="algorithm" />
+          </toggleGroup>
+          <FlowPane.margin>
+            <Insets left="20.0" fx:id="x6" />
+          </FlowPane.margin>
+        </RadioButton>
+        <RadioButton mnemonicParsing="false" text="IDA*" toggleGroup="$algorithm">
+          <FlowPane.margin>
+            <Insets left="10.0" />
+          </FlowPane.margin>
+        </RadioButton>
+        <Button fx:id="solveButton" disable="true" mnemonicParsing="false" onAction="#onSolveClick" text="Solve">
+          <FlowPane.margin>
+            <Insets left="20.0" fx:id="x7" />
+          </FlowPane.margin>
+        </Button>
         <ProgressIndicator fx:id="progressIndicator" visible="false">
           <FlowPane.margin>
             <Insets left="20.0" fx:id="x3" />
