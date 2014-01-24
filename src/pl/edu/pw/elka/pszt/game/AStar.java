@@ -79,7 +79,12 @@ public class AStar extends Task {
             }
 			update("start round # " + movesCount);
 			minMove = generateNewMovesPop();
-			moveFromRoot(minMove);
+            try {
+                moveFromRoot(minMove);
+            } catch (Exception e) {
+                update("cannot find route with these parameters");
+                return;
+            }
             update("barrels at spots: " + getNumberOfBarrelsAtSpot());
 			lastMove=minMove;
             update(getLevel().getMovablesMap().toString());
