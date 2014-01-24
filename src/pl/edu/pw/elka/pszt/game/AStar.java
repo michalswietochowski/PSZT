@@ -1,20 +1,15 @@
 package pl.edu.pw.elka.pszt.game;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import javafx.concurrent.Task;
+import pl.edu.pw.elka.pszt.gui.Observer;
 import pl.edu.pw.elka.pszt.models.Barrel;
 import pl.edu.pw.elka.pszt.models.BarrelSpotPair;
-import pl.edu.pw.elka.pszt.models.Bulldozer;
-import pl.edu.pw.elka.pszt.models.Floor;
 import pl.edu.pw.elka.pszt.models.Level;
 import pl.edu.pw.elka.pszt.models.Spot;
-import sun.org.mozilla.javascript.internal.ast.ArrayLiteral;
 
 public class AStar extends Task {
 
@@ -35,10 +30,11 @@ public class AStar extends Task {
 	private Date startDate, endDate;
 	private static DateFormat DATEFORMAT =  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
 
+    private Observer observer;
     private String threadId;
 	
 	public AStar(Level level, Move initialMove){
-		this.level = level;		
+		this.level = level;
 		moveTree = new MoveTree();
 		moveTree.setRoot(initialMove);
 		
@@ -47,9 +43,7 @@ public class AStar extends Task {
 	public AStar(Level level){
 		this.level = level;
 		moveTree = new MoveTree();
-		
-		//
-		
+
         ArrayList<Barrel> barrels = level.getMovablesMap().getBarrels();
         ArrayList<Spot> spots = level.getMap().getSpots();
     	
@@ -66,24 +60,23 @@ public class AStar extends Task {
 				bulldozerCoord[0],
 				bulldozerCoord[1]
 				);
-		
+
 		moveTree.setRoot(root);
-		//
 	}
 
 	@Override
 	public void run(){
 		update("A* thread started");
-		Date startdate = new Date();
+		startDate = new Date();
+        update("start time " + DATEFORMAT.format(startDate));
 		Move minMove = generateNewMovesPop();
 		checkMoves(minMove);
-		
+
 		for(int i=2 ;i<maxNumberOfSteps; i++){
-			System.out.println("\nstart round # " + movesCount);
+			update("start round # " + movesCount);
 			minMove = generateNewMovesPop();
 			moveFromRoot(minMove);
-			System.out.println(getLevel().getMovablesMap());
-			System.out.println("barrels at spots: " + getNumberOfBarrelsAtSpot());
+            update("barrels at spots: " + getNumberOfBarrelsAtSpot());
 			lastMove=minMove;
             update(getLevel().getMovablesMap().toString());
 			
@@ -95,10 +88,9 @@ public class AStar extends Task {
 			}
 			goBackToRoot(minMove);
 		}
-		//System.out.println(getLevel().getMovablesMap());
-		System.out.println("start time" + DATEFORMAT.format(startdate));
-        update(getLevel().getMovablesMap().toString());
-        update("start time" + DATEFORMAT.format(startdate));
+        endDate = new Date();
+        update("finish time " + DATEFORMAT.format(endDate));
+        update("END");
 	}
 	
 	
@@ -151,7 +143,7 @@ public class AStar extends Task {
 			}
 			goBackToRoot(child);
 		}
-		if(move.isMovedBarrel() 
+		if(move.isMovedBarrel()
 				&& checkMove(move, 'B')) {
 			Move child = move.calcNextMove('B');
 			
@@ -249,11 +241,6 @@ public class AStar extends Task {
 			move.setF(hh());
 		}
 		boolean canMove = level.canMove(nextMove);
-		/*if(nextMove.areAllChildrenDeadEnd()){
-			update("znalazlem martwe dziecko");
-			return false;
-			nigdy nie znajduje
-		}*/
 		if(move!=moveTree.getRoot()){
 			goBackToRoot(move);
 		}
@@ -273,12 +260,11 @@ public class AStar extends Task {
 		int size = parents.size();
 
 		//System.out.println("size beore"  + size);
-		System.out.println("move #"  + movesCount++ + "        move length =" + parents.get(0).getSize() );
-		System.out.println("F: " + parents.get(0).getF() );
-		
-		
+        movesCount++;
+//        update("move #"  + movesCount++ + "        move length =" + parents.get(0).getSize() );
+        update("F: " + parents.get(0).getF() );
 
-		update("size beore" + size);
+		update("moves searched in this operation: " + size);
 
 		int i=0;
 		for (Iterator<Move> iterator = parents.iterator(); iterator.hasNext(); ) {
@@ -290,7 +276,7 @@ public class AStar extends Task {
 		    }
 		}
 
-		System.out.println("usun¹³em " + i);
+//        update("removed " + i);
 		return findMinMoveFrom(parents);
 		
 		/*
@@ -471,9 +457,9 @@ public class AStar extends Task {
 		Collections.reverse(moves);
 		for (Move move2 : moves) {
 			level.move(move2);
-			update("moves from root ");
-			update(level.getMovablesMap().toString());
-			
+//			update("moves from root ");
+//			update(level.getMovablesMap().toString());
+
 		}
 	}
 	
@@ -500,7 +486,7 @@ public class AStar extends Task {
 			int[] barrel = level.getMovablesMap().findBarrel(pair.getLeft());
 			int[] bulldozer = level.getMovablesMap().findBulldozer();
 			if(barrel==null){
-				update("bef " + level.getMovablesMap());
+//				update("bef " + level.getMovablesMap());
 			}
 			h1 += Math.abs(barrel[0] -bulldozer[0]) + Math.abs(barrel[1] -bulldozer[1]);
 		}
@@ -629,6 +615,17 @@ public class AStar extends Task {
 		return lastMove;
 	}
 
+    public ArrayList<Move> getMoves()
+    {
+        ArrayList<Move> moves = new ArrayList<Move>();
+        Move move = this.getLastMove();
+        while (move.getParent() != null) {
+            moves.add(0, move);
+            move = move.getParent();
+        }
+        return moves;
+    }
+
 	public int getPathSize(){
 		return lastMove.getSize();
 	}
@@ -640,6 +637,14 @@ public class AStar extends Task {
 	public Date getEndDate() {
 		return endDate;
 	}
+
+    public long getTimeInterval()
+    {
+        if (this.getStartDate() == null || this.getEndDate() == null) {
+            return -1;
+        }
+        return this.getEndDate().getTime() - this.getStartDate().getTime();
+    }
 
 	public int getLoopRemoval() {
 		return loopRemoval;
@@ -658,6 +663,17 @@ public class AStar extends Task {
 		this.stepsPerBatSRate = stepsPerBatS;
 	}
 
+    public int getMovesCount() {
+        return movesCount;
+    }
+
+    public Observer getObserver() {
+        return observer;
+    }
+
+    public void setObserver(Observer observer) {
+        this.observer = observer;
+    }
 
     public void setThreadId(String threadId) {
         this.threadId = threadId;
@@ -669,9 +685,11 @@ public class AStar extends Task {
      */
     private void update(String message)
     {
-        if (threadId != null) {
-            message = String.format("[%s][Thread %s] %s", DATEFORMAT.format(new Date()), threadId, message);
-            updateMessage(message);
+        if (threadId != null && observer != null) {
+            if (!message.equals("END")) {
+                message = String.format("[%s][Thread %s] %s", DATEFORMAT.format(new Date()), threadId, message);
+            }
+            observer.update(threadId, message);
         } else {
             System.out.println(message);
         }
