@@ -257,7 +257,7 @@ public class AStar extends Task {
 	public Move generateNewMovesPop(){
 		ArrayList<Move> parents = moveTree.getBest(); //findYoungest();
 		if(parents.size()==0){
-			System.out.println("I USED YOUNGEST");
+			update("I USED YOUNGEST");
 			parents = moveTree.getYoungest();
 		}
 		//System.out.println("I USED BEST: \n" + parents + "\n");
@@ -690,9 +690,6 @@ public class AStar extends Task {
     private void update(String message)
     {
         if (threadId != null && observer != null) {
-            if (!message.equals("END") && !message.equals("CANCELLED")) {
-                message = String.format("[%s][Thread %s] %s", DATEFORMAT.format(new Date()), threadId, message);
-            }
             observer.update(threadId, message);
         } else {
             System.out.println(message);

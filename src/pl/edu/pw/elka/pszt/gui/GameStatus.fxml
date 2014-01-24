@@ -6,7 +6,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: #ededed;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="pl.edu.pw.elka.pszt.gui.GameStatusController">
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: #ededed;" xmlns="http://javafx.com/javafx/2.2" fx:controller="pl.edu.pw.elka.pszt.gui.GameStatusController">
   <bottom>
     <Pane prefHeight="220.0">
       <children>
@@ -46,12 +46,18 @@
             <Insets left="20.0" fx:id="x1" />
           </FlowPane.margin>
         </ComboBox>
-        <Label text="Remove loops:">
+        <Label text="Remove loops from:">
           <FlowPane.margin>
             <Insets left="20.0" fx:id="x2" />
           </FlowPane.margin>
         </Label>
-        <TextField fx:id="loopsRemovalCountTextField" maxWidth="30.0" prefWidth="200.0" />
+        <TextField fx:id="loopsRemovalCountFromTextField" maxWidth="30.0" prefWidth="200.0" />
+        <Label text="to:">
+          <FlowPane.margin>
+            <Insets left="20.0" fx:id="x5" />
+          </FlowPane.margin>
+        </Label>
+        <TextField fx:id="loopsRemovalCountToTextField" maxWidth="30.0" prefWidth="200.0" />
         <Button fx:id="solveButton" disable="true" mnemonicParsing="false" onAction="#onSolveClick" text="Solve" FlowPane.margin="$x2" />
         <ProgressIndicator fx:id="progressIndicator" visible="false">
           <FlowPane.margin>

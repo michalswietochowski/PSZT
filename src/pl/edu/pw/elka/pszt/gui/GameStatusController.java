@@ -14,7 +14,10 @@ import pl.edu.pw.elka.pszt.game.Move;
 import pl.edu.pw.elka.pszt.models.*;
 import pl.edu.pw.elka.pszt.utils.LevelFactory;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -25,6 +28,7 @@ public class GameStatusController implements Observer {
 
     private static final int LEVELS_NUM = 3;
     private static final int TILE_SIZE = 64;
+    private static DateFormat DATEFORMAT =  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
     private final ObservableList<AStar> threadList = FXCollections.observableArrayList();
     public ComboBox levelComboBox;
     public GridPane levelGridPane;
@@ -32,10 +36,11 @@ public class GameStatusController implements Observer {
     public TableView statsTableView;
     public ListView statusListView;
     public ProgressIndicator progressIndicator;
-    public TextField loopsRemovalCountTextField;
     public Label stepsLabel;
     public Button stepsPrevButton, stepsNextButton;
     public Button stopButton;
+    public TextField loopsRemovalCountFromTextField;
+    public TextField loopsRemovalCountToTextField;
     private int currentStep;
     private String currentThread;
     private ArrayList<Move> currentMoves;
@@ -60,13 +65,38 @@ public class GameStatusController implements Observer {
         }
         resetGUIState();
         statusListView.setDisable(true);
+        stepsLabel.setVisible(false);
+        stepsPrevButton.setVisible(false);
+        stepsPrevButton.setDisable(true);
+        stepsNextButton.setVisible(false);
+        stepsNextButton.setDisable(false);
         statusListView.getItems().clear();
         statsTableView.getItems().clear();
         threadList.clear();
+
+        int selectedLevel = getSelectedLevelNum();
+        switch (selectedLevel) {
+            case 1:
+                loopsRemovalCountFromTextField.setText("4");
+                loopsRemovalCountToTextField.setText("7");
+                break;
+            case 2:
+                loopsRemovalCountFromTextField.setText("7");
+                loopsRemovalCountToTextField.setText("10");
+                break;
+            case 3:
+                loopsRemovalCountFromTextField.setText("4");
+                loopsRemovalCountToTextField.setText("12");
+                break;
+        }
+    }
+
+    protected int getSelectedLevelNum() {
+        return levelComboBox.getSelectionModel().getSelectedIndex() + 1;
     }
 
     protected String getCurrentLevelName() {
-        return "level" + (levelComboBox.getSelectionModel().getSelectedIndex() + 1);
+        return "level" + getSelectedLevelNum();
     }
 
     protected void drawLevel(Level level) {
@@ -90,20 +120,54 @@ public class GameStatusController implements Observer {
     }
 
     public void onSolveClick(ActionEvent actionEvent) {
-        resetGUIState();
-        solveButton.setDisable(true);
-        progressIndicator.setVisible(true);
-        stopButton.setVisible(true);
-        statusListView.setDisable(false);
-        statusListView.getItems().clear();
-        statsTableView.getItems().clear();
-        threadList.clear();
+        if (validateInputs()) {
+            resetGUIState();
+            solveButton.setDisable(true);
+            progressIndicator.setVisible(true);
+            stopButton.setVisible(true);
+            statusListView.setDisable(false);
+            stepsLabel.setVisible(false);
+            stepsPrevButton.setVisible(false);
+            stepsPrevButton.setDisable(true);
+            stepsNextButton.setVisible(false);
+            stepsNextButton.setDisable(false);
+            statusListView.getItems().clear();
+            statsTableView.getItems().clear();
+            threadList.clear();
+            startSolving(levelComboBox.getSelectionModel().getSelectedIndex() + 1);
+        }
+    }
 
-        startSolving(levelComboBox.getSelectionModel().getSelectedIndex() + 1);
+    protected boolean validateInputs() {
+        String lrf = loopsRemovalCountFromTextField.getText(), lrt = loopsRemovalCountToTextField.getText();
+        if (lrf.isEmpty() || lrt.isEmpty()) {
+            Dialogs.showWarningDialog(null, "Remove loops text fields cannot be empty.");
+            return false;
+        }
+        try {
+            int removeLoopsFrom = Integer.parseInt(lrf);
+            int removeLoopsTo = Integer.parseInt(lrt);
+
+            if (removeLoopsFrom <= 0 || removeLoopsTo <= 0) {
+                Dialogs.showWarningDialog(null, "Remove loops text fields must contain positive numbers.");
+                return false;
+            }
+            if (removeLoopsFrom > removeLoopsTo) {
+                Dialogs.showWarningDialog(null, "Remove loops \"to\" must be higher than or equal \"from\" value.");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            Dialogs.showWarningDialog(null, "Remove loops text fields cannot be parsed as numbers.");
+            return false;
+        } catch (Exception e) {
+            Dialogs.showWarningDialog(null, "Remove loops text fields invalid input.");
+            return false;
+        }
+        return true;
     }
 
     protected void startSolving(int levelNum) {
-        solve(levelNum, Integer.parseInt(loopsRemovalCountTextField.getText()));
+        solve(levelNum);
     }
 
     protected ArrayList<BarrelSpotPair<Barrel, Spot>> getBarrelSpotPair(Level level) {
@@ -120,36 +184,53 @@ public class GameStatusController implements Observer {
         return barrelSpotPairs;
     }
 
-    protected void solve(int levelNum, int loopRemoval) {
+    protected void solve(int levelNum) {
         try {
-            Level level = LevelFactory.createFromProperties("level" + levelNum);
+            ArrayList<Integer> range = getLoopsRemovalRange();
+            Iterator<Integer> it = range.iterator();
 
-            AStar astar = new AStar(level);
-            astar.setLoopRemoval(loopRemoval);
-            astar.setMaxNumberOfSteps(100000);
-            astar.setThreadId(String.valueOf(threadList.size() + 1));
-            astar.setObserver(this);
-            Thread th = new Thread(astar);
-            th.setDaemon(true);
-            th.start();
-            threadList.add(astar);
+            while (it.hasNext()) {
+                Integer loopRemoval = it.next();
+                Level level = LevelFactory.createFromProperties("level" + levelNum);
+                AStar astar = new AStar(level);
+                astar.setLoopRemoval(loopRemoval);
+                astar.setMaxNumberOfSteps(100000);
+                astar.setThreadId(String.valueOf(threadList.size() + 1));
+                astar.setObserver(this);
+                Thread th = new Thread(astar);
+                th.setDaemon(true);
+                th.start();
+                threadList.add(astar);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    protected ArrayList<Integer> getLoopsRemovalRange() {
+        ArrayList<Integer> range = new ArrayList<Integer>();
+        int removeLoopsFrom = Integer.parseInt(loopsRemovalCountFromTextField.getText());
+        int removeLoopsTo = Integer.parseInt(loopsRemovalCountToTextField.getText());
+        for (int i = removeLoopsFrom; i <= removeLoopsTo; i++) {
+            range.add(i);
+        }
+        return range;
+    }
+
     public void update(final String threadId, final String message) {
-        currentThread = threadId;
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 if (message.equals("END")) {
+                    currentThread = threadId;
                     AStar astar = threadList.get(Integer.parseInt(threadId) - 1);
                     showStatsAndNav(astar);
                 } else if (message.equals("CANCELLED")) {
                     resetGUIState();
+                    statsTableView.setDisable(false);
                 }
-                statusListView.getItems().add(0, message);
+                String msg = String.format("[%s][Thread %s] %s", DATEFORMAT.format(new Date()), threadId, message);
+                statusListView.getItems().add(0, msg);
             }
         });
     }
@@ -165,29 +246,27 @@ public class GameStatusController implements Observer {
         currentMoves = astar.getMoves();
         currentMovesSize = currentMoves.size();
         double time = (double) astar.getTimeInterval() / 1000;
+        ArrayList<Integer> range = getLoopsRemovalRange();
 
         drawStep(currentStep);
 
         ObservableList<StatsParam> stats = FXCollections.observableArrayList(
+                new StatsParam("Found route length:", String.valueOf(currentMovesSize)),
+                new StatsParam("Remove loops min:", String.valueOf(range.get(Integer.parseInt(currentThread) - 1))),
+                new StatsParam("Winner thread:", currentThread),
+                new StatsParam("Number of threads:", String.valueOf(range.size())),
                 new StatsParam("Algorithm loops:", String.valueOf(astar.getMovesCount())),
-                new StatsParam("Bulldozer moves:", String.valueOf(currentMovesSize)),
                 new StatsParam("Elapsed time:", String.format("%.2fs", time))
         );
         statsTableView.setItems(stats);
         stopAllThreads();
     }
 
-    protected void resetGUIState()
-    {
+    protected void resetGUIState() {
         progressIndicator.setVisible(false);
         stopButton.setVisible(false);
         statsTableView.setDisable(true);
         solveButton.setDisable(false);
-        stepsLabel.setVisible(false);
-        stepsPrevButton.setVisible(false);
-        stepsPrevButton.setDisable(true);
-        stepsNextButton.setVisible(false);
-        stepsNextButton.setDisable(false);
     }
 
     public void onStepPrevClick(ActionEvent actionEvent) {
