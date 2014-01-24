@@ -132,6 +132,7 @@ public class GameStatusController implements Observer {
 
             AStar astar = new AStar(level);
             astar.setLoopRemoval(loopRemoval);
+            astar.setMaxNumberOfSteps(100000);
             astar.setThreadId(String.valueOf(threadList.size() + 1));
             astar.setObserver(this);
             new Thread(astar).start();
